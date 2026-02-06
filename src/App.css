@@ -1,0 +1,191 @@
+/* Estilos generales */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: white;
+}
+
+/* Contenedor principal del juego (Flexbox para layout lateral) */
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Panel Lateral de Navegación */
+.panel-lateral {
+  width: 250px;
+  background-color: #1a202c;
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  border-right: 1px solid #333;
+}
+
+.mapa-preguntas {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 columnas de números */
+  gap: 8px;
+}
+
+.boton-mapa {
+  background-color: #2d3748;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+  /* Añadimos un borde base para cuando se activa */
+  border: 2px solid transparent; 
+}
+
+.boton-mapa:hover {
+  background-color: #4a5568;
+}
+
+/* --- ESTILOS PARA RESULTADOS (VERDE/ROJO) --- */
+.boton-mapa.correcto {
+  background-color: #2f855a; /* Verde */
+}
+
+.boton-mapa.incorrecto {
+  background-color: #c53030; /* Rojo */
+}
+
+.boton-mapa.activo {
+  border-color: #3182ce; /* Azul para la pregunta actual */
+  font-weight: bold;
+}
+
+/* Área principal de pregunta y menú */
+.menu-container, .examen-container {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-botones {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 400px;
+}
+
+button {
+  padding: 15px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: #3182ce;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2b6cb0;
+}
+
+.btn-primary:disabled {
+  background-color: #4a5568;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #4a5568;
+  color: white;
+}
+
+.boton-volver {
+  background-color: #e53e3e;
+  color: white;
+  margin-top: auto;
+}
+
+/* Estilos específicos del juego */
+.area-pregunta {
+  width: 100%;
+  max-width: 800px;
+}
+
+.progreso {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  color: #a0aec0;
+}
+
+.opciones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.boton-opcion {
+  background-color: #2d3748;
+  color: white;
+  text-align: left;
+  padding: 15px;
+  border: 2px solid transparent;
+}
+
+.boton-opcion:hover:not(:disabled) {
+  background-color: #4a5568;
+}
+
+.boton-opcion.seleccionado {
+  border-color: #3182ce;
+}
+
+.boton-opcion.correcto {
+  background-color: #2f855a;
+}
+
+.boton-opcion.incorrecto {
+  background-color: #c53030;
+}
+
+.letra-opcion {
+  font-weight: bold;
+  margin-right: 10px;
+  background-color: #4a5568;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.footer-pregunta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  gap: 10px;
+}
+
+/* Estilos formulario */
+.formulario-pregunta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 500px;
+}
+
+textarea, select, input {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #4a5568;
+  background-color: #2d3748;
+  color: white;
+}
