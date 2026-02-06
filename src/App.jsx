@@ -150,6 +150,16 @@ function App() {
     }
   };
 
+  // --- LÓGICA DE CONTRASEÑA ---
+  const verificarAdmin = () => {
+    const password = prompt("Ingrese la contraseña de administrador:");
+    if (password === "91127") {
+      setPaginaActual('administrar');
+    } else {
+      alert("Contraseña incorrecta");
+    }
+  };
+
   if (loading) return <div className="app-container">Cargando...</div>;
 
   // --- RENDERIZADO DE VISTAS ---
@@ -165,7 +175,7 @@ function App() {
           <div className="menu-botones">
             <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
             <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
-            <button onClick={() => setPaginaActual('administrar')} className="menu-btn tertiary">Administrador</button>
+            <button onClick={verificarAdmin} className="menu-btn tertiary">Administrador</button>
           </div>
         </div>
       </div>
