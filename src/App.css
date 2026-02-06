@@ -1,191 +1,127 @@
-/* Estilos generales */
+/* Estilos Generales */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #121212;
-  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
 }
 
-/* Contenedor principal del juego (Flexbox para layout lateral) */
 .app-container {
-  display: flex;
-  height: 100vh;
-}
-
-/* Panel Lateral de Navegación */
-.panel-lateral {
-  width: 250px;
-  background-color: #1a202c;
-  color: white;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  overflow-y: auto;
-  border-right: 1px solid #333;
-}
-
-.mapa-preguntas {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5 columnas de números */
-  gap: 8px;
-}
-
-.boton-mapa {
-  background-color: #2d3748;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: center;
-  transition: background-color 0.2s;
-  /* Añadimos un borde base para cuando se activa */
-  border: 2px solid transparent; 
-}
-
-.boton-mapa:hover {
-  background-color: #4a5568;
-}
-
-/* --- ESTILOS PARA RESULTADOS (VERDE/ROJO) --- */
-.boton-mapa.correcto {
-  background-color: #2f855a; /* Verde */
-}
-
-.boton-mapa.incorrecto {
-  background-color: #c53030; /* Rojo */
-}
-
-.boton-mapa.activo {
-  border-color: #3182ce; /* Azul para la pregunta actual */
-  font-weight: bold;
-}
-
-/* Área principal de pregunta y menú */
-.menu-container, .examen-container {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
 }
 
-.menu-botones {
-  display: flex;
-  flex-direction: column;
+.app-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.app-header h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+}
+
+.main-content {
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Sección Temas */
+.temas-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+.temas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 15px;
-  width: 100%;
-  max-width: 400px;
-}
-
-button {
-  padding: 15px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s;
-}
-
-.btn-primary {
-  background-color: #3182ce;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #2b6cb0;
-}
-
-.btn-primary:disabled {
-  background-color: #4a5568;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background-color: #4a5568;
-  color: white;
-}
-
-.boton-volver {
-  background-color: #e53e3e;
-  color: white;
-  margin-top: auto;
-}
-
-/* Estilos específicos del juego */
-.area-pregunta {
-  width: 100%;
-  max-width: 800px;
-}
-
-.progreso {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  color: #a0aec0;
-}
-
-.opciones-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   margin-top: 20px;
 }
 
-.boton-opcion {
-  background-color: #2d3748;
+.tema-button {
+  background-color: #3498db;
   color: white;
-  text-align: left;
+  border: none;
   padding: 15px;
-  border: 2px solid transparent;
-}
-
-.boton-opcion:hover:not(:disabled) {
-  background-color: #4a5568;
-}
-
-.boton-opcion.seleccionado {
-  border-color: #3182ce;
-}
-
-.boton-opcion.correcto {
-  background-color: #2f855a;
-}
-
-.boton-opcion.incorrecto {
-  background-color: #c53030;
-}
-
-.letra-opcion {
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
   font-weight: bold;
-  margin-right: 10px;
-  background-color: #4a5568;
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
-.footer-pregunta {
+.tema-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* Sección Contadores */
+.contadores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.contador-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-bottom: 5px solid;
+  transition: transform 0.2s;
+}
+
+.contador-card:hover {
+  transform: translateY(-5px);
+}
+
+.contador-card.correcta { border-color: #2ecc71; }
+.contador-card.incorrecta { border-color: #e74c3c; }
+.contador-card.blanco { border-color: #95a5a6; }
+
+.contador-card .icon {
+  font-size: 2rem;
+}
+
+.contador-card h3 {
+  margin: 10px 0;
+  color: #7f8c8d;
+}
+
+.contador-card .numero {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Sección Acciones */
+.acciones-section {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 15px;
   margin-top: 30px;
-  gap: 10px;
 }
 
-/* Estilos formulario */
-.formulario-pregunta {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 500px;
+.accion-button {
+  padding: 15px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.3s;
 }
 
-textarea, select, input {
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #4a5568;
-  background-color: #2d3748;
-  color: white;
+.accion-button:hover {
+  opacity: 0.8;
 }
+
+.correcta-btn { background-color: #2ecc71; color: white; }
+.incorrecta-btn { background-color: #e74c3c; color: white; }
+.blanco-btn { background-color: #95a5a6; color: white; }
