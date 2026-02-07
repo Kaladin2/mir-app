@@ -373,9 +373,11 @@ function App() {
               <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
             </div>
 
-            <div className="referencia-pregunta" style={{color: '#888', fontSize: '0.9rem', marginBottom: '10px', marginTop: '-10px'}}>
+            {/* --- ACTUALIZADO: ESTILO DE REFERENCIA MÁS VISIBLE --- */}
+            <div className="referencia-pregunta" style={{color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', marginTop: '-5px'}}>
                 {preguntaActual.año} - Pregunta {preguntaActual.numeroPregunta}
             </div>
+            {/* ---------------------------------------------------- */}
 
             <h2>{preguntaActual.pregunta}</h2>
             <div className="opciones-container">
@@ -441,7 +443,6 @@ function App() {
             {listaTemas.map(tema => <option key={tema} value={tema}>{tema}</option>)}
           </select>
 
-          {/* --- NUEVOS INPUTS ADMIN ACTUALIZADOS --- */}
           <div style={{display: 'flex', gap: '10px'}}>
               <div style={{flex: 1}}>
                   <label>Año</label>
@@ -454,7 +455,6 @@ function App() {
                   <input type="text" placeholder="Ej. 12" value={numeroPreguntaInput} onChange={e => setNumeroPreguntaInput(e.target.value)} required style={{width: '100%'}}/>
               </div>
           </div>
-          {/* -------------------------- */}
 
           <textarea placeholder="Enunciado de la pregunta..." value={nuevaPregunta} onChange={e => setNuevaPregunta(e.target.value)} required />
           {opcionesForm.map((op, i) => (
