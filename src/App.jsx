@@ -5,18 +5,21 @@ import './App.css'
 function App() {
   const [todasLasPreguntas, setTodasLasPreguntas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [paginaActual, setPaginaActual] = useState('menu'); // 'menu', 'modo', 'modo-tipo', 'temas', 'juego', 'administrar'
+  const [paginaActual, setPaginaActual] = useState('menu'); 
 
   // --- ESTADO DEL JUEGO ---
   const [preguntasJuego, setPreguntasJuego] = useState([]);
   const [preguntaActualIndex, setPreguntaActualIndex] = useState(0);
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
   const [comprobado, setComprobado] = useState(false);
+  
+  // --- CAMBIO AQUÍ: Ahora estos estados son cruciales ---
   const [indiceCorrectaMezclada, setIndiceCorrectaMezclada] = useState(null);
   const [opcionesMezcladas, setOpcionesMezcladas] = useState([]);
-  const [resultadosMapa, setResultadosMapa] = useState([]); 
+  // ------------------------------------------------------
   
-  const [modoJuego, setModoJuego] = useState('practica'); // 'practica' o 'examen'
+  const [resultadosMapa, setResultadosMapa] = useState([]); 
+  const [modoJuego, setModoJuego] = useState('practica'); 
   const [examenFinalizado, setExamenFinalizado] = useState(false);
 
   // --- CONTADORES ---
@@ -38,7 +41,6 @@ function App() {
     "Investigacion", "UCI", "Endocrinologia"
   ];
 
-  // Cargar preguntas desde Supabase al iniciar
   useEffect(() => {
     fetchPreguntas();
     setTemaInput(listaTemas[0]);
@@ -56,33 +58,43 @@ function App() {
   }
 
   // --- LÓGICA DE JUEGO ---
+  
+  // --- CAMBIO SIGNIFICATIVO AQUÍ ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
     
-    const opcionesArray = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
-    
-    let opcionesConId = opcionesArray.map((texto, index) => ({
-      texto,
-      esCorrecta: index === pregunta.correcta - 1
+    // 1. Obtener opciones originales
+    const opcionesOriginales = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
+    const textoCorrectoOriginal = opcionesOriginales[pregunta.correcta - 1];
+
+    // 2. Crear un array de objetos para mezclar manteniendo la referencia de cuál es correcta
+    let opcionesParaMezclar = opcionesOriginales.map((texto, i) => ({
+        texto: texto,
+        originalIndex: i + 1
     }));
 
-    // Fisher-Yates shuffle para mezclar opciones
-    for (let i = opcionesConId.length - 1; i > 0; i--) {
+    // 3. Fisher-Yates shuffle para mezclar solo estas opciones
+    for (let i = opcionesParaMezclar.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [opcionesConId[i], opcionesConId[j]] = [opcionesConId[j], opcionesConId[i]];
+      [opcionesParaMezclar[i], opcionesParaMezclar[j]] = [opcionesParaMezclar[j], opcionesParaMezclar[i]];
     }
 
-    setOpcionesMezcladas(opcionesConId.map(o => o.texto));
-    setIndiceCorrectaMezclada(opcionesConId.findIndex(o => o.esCorrecta) + 1);
+    // 4. Actualizar estados con las opciones mezcladas de ESTA pregunta
+    setOpcionesMezcladas(opcionesParaMezclar.map(o => o.texto));
     
+    // 5. Encontrar cuál es la nueva posición de la respuesta correcta
+    const nuevaPosicionCorrecta = opcionesParaMezclar.findIndex(o => o.texto === textoCorrectoOriginal) + 1;
+    setIndiceCorrectaMezclada(nuevaPosicionCorrecta);
+    
+    // Resetear estados de respuesta para la nueva pregunta
     const respuestaGuardada = resultadosMapa[index]?.respuestaUsuario;
     setRespuestaSeleccionada(respuestaGuardada || null);
-    
-    setComprobado(modoJuego === 'examen' ? examenFinalizado : false);
+    setComprobado(resultadosMapa[index]?.resultado !== null);
     
     setPreguntaActualIndex(index);
   };
+  // ----------------------------------
 
   const iniciarJuego = (preguntasSeleccionadas) => {
     if (preguntasSeleccionadas.length === 0) {
@@ -93,10 +105,8 @@ function App() {
     const seleccionadas = mezcladas.slice(0, 50);
     setPreguntasJuego(seleccionadas);
     
-    // Inicializar mapa de resultados
     setResultadosMapa(seleccionadas.map((_, i) => ({ index: i, resultado: null, respuestaUsuario: null })));
     
-    // Resetear contadores
     setCorrectas(0);
     setIncorrectas(0);
     setEnBlanco(0);
@@ -107,14 +117,12 @@ function App() {
   };
 
   const manejarSiguiente = () => {
-    // 1. Guardar la respuesta actual en el mapa (sea null o un valor)
     setResultadosMapa(prev => prev.map(item => 
         item.index === preguntaActualIndex 
           ? { ...item, respuestaUsuario: respuestaSeleccionada } 
           : item
     ));
 
-    // 2. Avanzar
     if (preguntaActualIndex < preguntasJuego.length - 1) {
         prepararPregunta(preguntaActualIndex + 1);
     }
@@ -124,12 +132,9 @@ function App() {
     setComprobado(true);
     let resultado = 'incorrecto';
     
-    // --- CAMBIO: LÓGICA REVISADA ---
     if (respuestaSeleccionada === null) {
       resultado = 'blanco';
       setEnBlanco(prev => prev + 1);
-      // Al ser en blanco, no cambiamos `respuestaSeleccionada` 
-      // así el usuario ve cuál era la correcta sin que la suya se marque como incorrecta.
     } else {
       const esCorrecta = respuestaSeleccionada === indiceCorrectaMezclada;
       if (esCorrecta) {
@@ -140,7 +145,6 @@ function App() {
         setIncorrectas(prev => prev + 1);
       }
     }
-    // --------------------------------
 
     setResultadosMapa(prev => prev.map(item => 
       item.index === preguntaActualIndex 
@@ -154,19 +158,14 @@ function App() {
       let inc = 0;
       let bla = 0;
 
-      // Calcular resultados finales comparando respuestas
       const nuevosResultados = resultadosMapa.map((item, index) => {
           const pregunta = preguntasJuego[index];
           
-          // Re-mezclar opciones para encontrar el índice correcto en la vista actual
-          const opcionesArray = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
-          const textoCorrecto = opcionesArray[pregunta.correcta - 1];
-          const indiceCorrectaMezclada = opcionesMezcladas.indexOf(textoCorrecto) + 1;
-
+          // Re-calcular basado en la respuesta original
           let res = 'blanco';
           if (item.respuestaUsuario === null) {
               bla++;
-          } else if (item.respuestaUsuario === indiceCorrectaMezclada) {
+          } else if (item.respuestaUsuario === pregunta.correcta) { // AQUÍ ESTABA EL ERROR: Usar pregunta.correcta original
               res = 'correcto';
               corr++;
           } else {
@@ -214,7 +213,6 @@ function App() {
     }
   };
 
-  // --- LÓGICA DE CONTRASEÑA ---
   const verificarAdmin = () => {
     const password = prompt("Ingrese la contraseña de administrador:");
     if (password === "91127") {
@@ -228,7 +226,6 @@ function App() {
 
   // --- RENDERIZADO DE VISTAS ---
 
-  // 1. MENÚ PRINCIPAL
   if (paginaActual === 'menu') {
     return (
       <div className="app-container">
@@ -245,7 +242,6 @@ function App() {
     );
   }
   
-  // 2. SELECCIÓN DE MODO
   if (paginaActual === 'modo') {
       return (
           <div className="app-container">
@@ -261,7 +257,6 @@ function App() {
       );
   }
 
-  // 3. SELECCIÓN DE TIPO
   if (paginaActual === 'modo-tipo') {
       return (
           <div className="app-container">
@@ -277,7 +272,6 @@ function App() {
       );
   }
 
-  // 4. SELECCIÓN DE TEMAS
   if (paginaActual === 'temas') {
     return (
       <div className="app-container">
@@ -295,14 +289,12 @@ function App() {
     );
   }
 
-  // 5. VISTA DE JUEGO
   if (paginaActual === 'juego') {
     const preguntaActual = preguntasJuego[preguntaActualIndex];
     if (!preguntaActual) return <div className="app-container">No hay preguntas en este tema.</div>;
 
     return (
       <div className="app-container" style={{flexDirection: 'row', alignItems: 'flex-start'}}>
-        {/* Panel Lateral */}
         <div className="panel-lateral">
           <button onClick={() => setPaginaActual('menu')} className="boton-volver">Salir</button>
           <h3>Mapa</h3>
@@ -332,7 +324,6 @@ function App() {
           )}
         </div>
 
-        {/* Área de Pregunta */}
         <div className="examen-container">
           <div className="area-pregunta">
             <div className="progreso">
@@ -344,16 +335,12 @@ function App() {
               {opcionesMezcladas.map((opcion, index) => {
                 let claseBoton = "boton-opcion";
                 
-                // --- CAMBIO: LÓGICA DE CLASES PARA VERDE/ROJO ---
                 if (comprobado || examenFinalizado) {
-                  // Resaltar la correcta siempre en verde
                   if (index + 1 === indiceCorrectaMezclada) claseBoton += " correcto";
-                  // Resaltar la seleccionada por el usuario en rojo si es incorrecta
                   else if (index + 1 === respuestaSeleccionada) claseBoton += " incorrecto";
                 } else if (respuestaSeleccionada === index + 1) {
                   claseBoton += " seleccionado";
                 }
-                // -------------------------------------------------
                 
                 return (
                   <button key={index} className={claseBoton} onClick={() => {
@@ -396,7 +383,6 @@ function App() {
     );
   }
 
-  // 6. ADMINISTRADOR
   if (paginaActual === 'administrar') {
     return (
       <div className="app-container">
