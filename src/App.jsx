@@ -29,7 +29,7 @@ function App() {
   const [opcionesForm, setOpcionesForm] = useState(["", "", "", ""]);
   const [respuestaCorrectaInput, setRespuestaCorrectaInput] = useState(1);
   const [temaInput, setTemaInput] = useState("");
-  const [explicacionInput, setExplicacionInput] = useState(""); // NUEVO
+  const [explicacionInput, setExplicacionInput] = useState("");
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -82,6 +82,7 @@ function App() {
     setPreguntaActualIndex(index);
   };
 
+  // MODIFICADA: Ahora recibe las preguntas directamente
   const iniciarJuego = (preguntasSeleccionadas) => {
     if (preguntasSeleccionadas.length === 0) {
       alert("No hay preguntas disponibles");
@@ -149,7 +150,7 @@ function App() {
           opcionD: opcionesForm[3],
           correcta: parseInt(respuestaCorrectaInput),
           tema: temaInput,
-          explicacion: explicacionInput // NUEVO
+          explicacion: explicacionInput
         },
       ]);
 
@@ -160,7 +161,7 @@ function App() {
       setNuevaPregunta("");
       setOpcionesForm(["", "", "", ""]);
       setRespuestaCorrectaInput(1);
-      setExplicacionInput(""); // NUEVO
+      setExplicacionInput("");
       fetchPreguntas();
     }
   };
@@ -188,8 +189,7 @@ function App() {
             <h1>Centro de Entrenamiento MIR</h1>
           </header>
           <div className="menu-botones">
-            <button onClick={() => { setModoJuego('practica'); setPaginaActual('modo'); }} className="menu-btn primary">Preguntas Aleatorias (50)</button>
-            <button onClick={() => { setModoJuego('practica'); setPaginaActual('temas'); }} className="menu-btn secondary">Elegir Tema</button>
+            <button onClick={() => setPaginaActual('modo')} className="menu-btn primary">Iniciar Test</button>
             <button onClick={verificarAdmin} className="menu-btn tertiary">Administrador</button>
           </div>
         </div>
@@ -204,8 +204,8 @@ function App() {
               <div className="menu-box">
                   <h2>Selecciona el Modo</h2>
                   <div className="menu-botones">
-                      <button onClick={() => { setModoJuego('practica'); setPaginaActual('temas'); }} className="menu-btn primary">Modo Práctica</button>
-                      <button onClick={() => { setModoJuego('examen'); setPaginaActual('temas'); }} className="menu-btn secondary">Modo Examen</button>
+                      <button onClick={() => { setModoJuego('practica'); setPaginaActual('modo-tipo'); }} className="menu-btn primary">Modo Práctica</button>
+                      <button onClick={() => { setModoJuego('examen'); setPaginaActual('modo-tipo'); }} className="menu-btn secondary">Modo Examen</button>
                       <button onClick={() => setPaginaActual('menu')} className="boton-volver">Volver</button>
                   </div>
               </div>
@@ -213,11 +213,27 @@ function App() {
       );
   }
 
-  // 3. SELECCIÓN DE TEMAS
+  // NUEVO: 3. SELECCIÓN DE TIPO (ALEATORIO O TEMA)
+  if (paginaActual === 'modo-tipo') {
+      return (
+          <div className="app-container">
+              <div className="menu-box">
+                  <h2>¿Qué quieres estudiar?</h2>
+                  <div className="menu-botones">
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
+                      <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
+                      <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
+                  </div>
+              </div>
+          </div>
+      );
+  }
+
+  // 4. SELECCIÓN DE TEMAS
   if (paginaActual === 'temas') {
     return (
       <div className="app-container">
-        <button onClick={() => setPaginaActual('menu')} className="boton-volver">⬅ Volver</button>
+        <button onClick={() => setPaginaActual('modo-tipo')} className="boton-volver">⬅ Volver</button>
         <h2>Selecciona un Tema</h2>
         <div className="temas-grid">
           {listaTemas.map(tema => (
@@ -231,7 +247,7 @@ function App() {
     );
   }
 
-  // 4. VISTA DE JUEGO
+  // 5. VISTA DE JUEGO
   if (paginaActual === 'juego') {
     const preguntaActual = preguntasJuego[preguntaActualIndex];
     if (!preguntaActual) return <div className="app-container">No hay preguntas en este tema.</div>;
@@ -298,14 +314,12 @@ function App() {
               })}
             </div>
 
-            {/* --- NUEVO: AREA DE EXPLICACIÓN --- */}
             {(comprobado || examenFinalizado) && preguntaActual.explicacion && (
                 <div className="area-explicacion">
                     <h4>Explicación:</h4>
                     <p>{preguntaActual.explicacion}</p>
                 </div>
             )}
-            {/* --------------------------------- */}
 
             <div className="footer-pregunta">
               {modoJuego === 'practica' && (
@@ -332,7 +346,7 @@ function App() {
     );
   }
 
-  // 5. ADMINISTRADOR
+  // 6. ADMINISTRADOR
   if (paginaActual === 'administrar') {
     return (
       <div className="app-container">
@@ -354,10 +368,8 @@ function App() {
           <label>Número Respuesta Correcta (1-4)</label>
           <input type="number" min="1" max="4" value={respuestaCorrectaInput} onChange={e => setRespuestaCorrectaInput(e.target.value)} required />
           
-          {/* --- NUEVO: CAMPO EXPLICACIÓN --- */}
           <label>Explicación</label>
           <textarea placeholder="Por qué esta respuesta es correcta..." value={explicacionInput} onChange={e => setExplicacionInput(e.target.value)} />
-          {/* --------------------------------- */}
 
           <button type="submit" className="btn-primary">Guardar Pregunta</button>
         </form>
