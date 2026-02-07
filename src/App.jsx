@@ -36,9 +36,10 @@ function App() {
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
-    "Farmacologia", "Ginecologia", "Digestivo", "Respiratorio", 
+    "Farmacologia", "Ginecologia/Obstetricia", "Digestivo", "Respiratorio", 
     "Oncologia", "Geriatria", "Urgencias y Emergencias", "Psiquiatria", 
-    "Investigacion", "UCI", "Endocrinologia"
+    "Investigacion", "UCI", "Endocrinologia", "Familia", "Salud Publica",
+    "Dermatologia", "Cardiologia", "Otorrinologia"
   ];
 
   useEffect(() => {
