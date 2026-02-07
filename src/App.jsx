@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react' // <--- useRef añadido
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
 import './App.css'
 
@@ -232,10 +232,10 @@ function App() {
   // --- RENDERIZADO DE VISTAS ---
   return (
     <>
-      {/* Botón música visible fuera del juego */}
+      {/* Botón música con símbolos tipo play/pause */}
       {paginaActual !== 'juego' && (
         <button onClick={alternarMusica} className="boton-musica">
-          {musicaReproduciendo ? "🔇 Pausar Música" : "🔊 Reproducir Música"}
+          {musicaReproduciendo ? "⏸" : "▶"}
         </button>
       )}
 
@@ -271,7 +271,7 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
