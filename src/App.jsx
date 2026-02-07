@@ -28,8 +28,7 @@ function App() {
   const [respuestaCorrectaInput, setRespuestaCorrectaInput] = useState(1);
   const [temaInput, setTemaInput] = useState("");
   const [explicacionInput, setExplicacionInput] = useState("");
-  
-  // --- ESTADOS DE REFERENCIA ---
+  // --- NUEVOS ESTADOS ADMINISTRADOR ---
   const [añoInput, setAñoInput] = useState("");
   const [numeroPreguntaInput, setNumeroPreguntaInput] = useState("");
 
@@ -40,8 +39,8 @@ function App() {
     "Investigacion", "UCI", "Endocrinologia"
   ];
 
-  // --- LISTA DE AÑOS ---
-  const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025"];
+  // --- NUEVA LISTA DE AÑOS ---
+  const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"];
 
   useEffect(() => {
     fetchPreguntas();
@@ -219,8 +218,8 @@ function App() {
           correcta: parseInt(respuestaCorrectaInput),
           tema: temaInput,
           explicacion: explicacionInput,
-          año: añoInput,
-          numeroPregunta: numeroPreguntaInput
+          año: añoInput, // <--- Nueva columna
+          numeroPregunta: numeroPreguntaInput // <--- Nueva columna
         },
       ]);
 
@@ -232,7 +231,7 @@ function App() {
       setOpcionesForm(["", "", "", ""]);
       setRespuestaCorrectaInput(1);
       setExplicacionInput("");
-      setAñoInput(listaAños[0]);
+      setAñoInput(listaAños[0]); // Resetear a año por defecto
       setNumeroPreguntaInput("");
       fetchPreguntas();
     }
@@ -253,8 +252,7 @@ function App() {
 
   if (paginaActual === 'menu') {
     return (
-      // CLASE menu-fondo aplicada solo aquí
-      <div className="app-container menu-fondo">
+      <div className="app-container">
         <div className="menu-box">
           <header className="app-header">
             <h1>Centro de Entrenamiento MIR</h1>
@@ -289,7 +287,7 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
@@ -375,10 +373,11 @@ function App() {
               <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
             </div>
 
-            {/* --- REFERENCIA VISIBLE --- */}
+            {/* --- ACTUALIZADO: ESTILO DE REFERENCIA MÁS VISIBLE --- */}
             <div className="referencia-pregunta" style={{color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', marginTop: '-5px'}}>
                 {preguntaActual.año} - Pregunta {preguntaActual.numeroPregunta}
             </div>
+            {/* ---------------------------------------------------- */}
 
             <h2>{preguntaActual.pregunta}</h2>
             <div className="opciones-container">
@@ -444,7 +443,6 @@ function App() {
             {listaTemas.map(tema => <option key={tema} value={tema}>{tema}</option>)}
           </select>
 
-          {/* --- INPUTS REFERENCIA --- */}
           <div style={{display: 'flex', gap: '10px'}}>
               <div style={{flex: 1}}>
                   <label>Año</label>
