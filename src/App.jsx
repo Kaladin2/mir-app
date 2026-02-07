@@ -60,15 +60,11 @@ function App() {
     
     const resultadoGuardado = resultadosMapa[index];
     
-    // Restaurar selección si la había
     setRespuestaSeleccionada(resultadoGuardado?.respuestaUsuario || null);
     
-    // Restaurar estado de comprobación
     if (modoJuego === 'practica') {
-        // En práctica, si ya tenía resultado (incluido blanco), ya estaba comprobada
         setComprobado(resultadoGuardado?.resultado !== null);
     } else {
-        // Modo examen
         setComprobado(examenFinalizado);
     }
     
@@ -117,21 +113,17 @@ function App() {
     prepararPregunta(0);
   };
 
-  // --- CAMBIO: AHORA MANEJA MEJOR EL AVANCE ---
   const manejarSiguiente = () => {
-    // 1. Guardar estado actual
     setResultadosMapa(prev => prev.map(item => 
         item.index === preguntaActualIndex 
           ? { ...item, respuestaUsuario: respuestaSeleccionada } 
           : item
     ));
 
-    // 2. Avanzar
     if (preguntaActualIndex < preguntasJuego.length - 1) {
         prepararPregunta(preguntaActualIndex + 1);
     }
   };
-  // --------------------------------------------
 
   const comprobarRespuestaPractica = () => {
     setComprobado(true);
@@ -189,6 +181,25 @@ function App() {
       setComprobado(true);
       alert(`Examen finalizado.\nCorrectas: ${corr}\nIncorrectas: ${inc}\nEn Blanco: ${bla}`);
   };
+
+  // --- CAMBIO: FUNCIÓN PARA COPIAR PREGUNTA ---
+  const copiarPregunta = () => {
+      const pregunta = preguntasJuego[preguntaActualIndex];
+      if (!pregunta) return;
+
+      const textoACopiar = `Pregunta: ${pregunta.pregunta}\n\n` +
+                          `A) ${pregunta.opcionA}\n` +
+                          `B) ${pregunta.opcionB}\n` +
+                          `C) ${pregunta.opcionC}\n` +
+                          `D) ${pregunta.opcionD}\n\n` +
+                          `Respuesta Correcta: ${pregunta.correcta}\n` +
+                          `Explicación: ${pregunta.explicacion}`;
+
+      navigator.clipboard.writeText(textoACopiar)
+          .then(() => alert("Pregunta copiada al portapapeles"))
+          .catch(err => console.error("Error al copiar: ", err));
+  };
+  // ---------------------------------------------
 
   const agregarPregunta = async (e) => {
     e.preventDefault();
@@ -333,7 +344,27 @@ function App() {
         <div className="examen-container">
           <div className="area-pregunta">
             <div className="progreso">
-              <span>Pregunta {preguntaActualIndex + 1} / {preguntasJuego.length}</span>
+              {/* --- CAMBIO: BOTÓN COPIAR JUNTO AL PROGRESO --- */}
+              <div style={{display: 'flex', alignItems: 'center'}}>
+                <span>Pregunta {preguntaActualIndex + 1} / {preguntasJuego.length}</span>
+                <button 
+                  onClick={copiarPregunta} 
+                  className="boton-copiar"
+                  style={{
+                    marginLeft: '15px', 
+                    background: 'transparent', 
+                    border: '1px solid #666', 
+                    color: '#aaa', 
+                    borderRadius: '4px', 
+                    padding: '2px 8px', 
+                    cursor: 'pointer',
+                    fontSize: '0.8rem'
+                  }}
+                >
+                  Copiar pregunta
+                </button>
+              </div>
+              {/* --------------------------------------------- */}
               <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
             </div>
             <h2>{preguntaActual.pregunta}</h2>
@@ -379,11 +410,9 @@ function App() {
                 </button>
               )}
               
-              {/* --- CAMBIO: ELIMINADO EL 'DISABLED' QUE BLOQUEABA AVANZAR EN BLANCO --- */}
               <button className="btn-next" onClick={manejarSiguiente} disabled={examenFinalizado}>
                 Siguiente
               </button>
-              {/* ---------------------------------------------------------------------- */}
             </div>
           </div>
         </div>
