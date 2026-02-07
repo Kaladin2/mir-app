@@ -28,6 +28,9 @@ function App() {
   const [respuestaCorrectaInput, setRespuestaCorrectaInput] = useState(1);
   const [temaInput, setTemaInput] = useState("");
   const [explicacionInput, setExplicacionInput] = useState("");
+  // --- NUEVOS ESTADOS ADMINISTRADOR ---
+  const [añoInput, setAñoInput] = useState("");
+  const [numeroPreguntaInput, setNumeroPreguntaInput] = useState("");
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -182,12 +185,10 @@ function App() {
       alert(`Examen finalizado.\nCorrectas: ${corr}\nIncorrectas: ${inc}\nEn Blanco: ${bla}`);
   };
 
-  // --- CAMBIO: LÓGICA DE COPIADO ACTUALIZADA ---
   const copiarPregunta = () => {
       const pregunta = preguntasJuego[preguntaActualIndex];
       if (!pregunta) return;
 
-      // Solo copiar pregunta y opciones
       const textoACopiar = `${pregunta.pregunta}\n\n` +
                           `A) ${pregunta.opcionA}\n` +
                           `B) ${pregunta.opcionB}\n` +
@@ -198,8 +199,8 @@ function App() {
           .then(() => alert("Pregunta y respuestas copiadas al portapapeles"))
           .catch(err => console.error("Error al copiar: ", err));
   };
-  // ---------------------------------------------
 
+  // --- ACTUALIZADO PARA INSERTAR AÑO Y NÚMERO ---
   const agregarPregunta = async (e) => {
     e.preventDefault();
     const { error } = await supabase
@@ -213,7 +214,9 @@ function App() {
           opcionD: opcionesForm[3],
           correcta: parseInt(respuestaCorrectaInput),
           tema: temaInput,
-          explicacion: explicacionInput
+          explicacion: explicacionInput,
+          año: añoInput, // <--- Nueva columna
+          numeroPregunta: numeroPreguntaInput // <--- Nueva columna
         },
       ]);
 
@@ -225,6 +228,8 @@ function App() {
       setOpcionesForm(["", "", "", ""]);
       setRespuestaCorrectaInput(1);
       setExplicacionInput("");
+      setAñoInput("");
+      setNumeroPreguntaInput("");
       fetchPreguntas();
     }
   };
@@ -364,6 +369,13 @@ function App() {
               </div>
               <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
             </div>
+
+            {/* --- NUEVO: REFERENCIA DE LA PREGUNTA --- */}
+            <div className="referencia-pregunta" style={{color: '#888', fontSize: '0.9rem', marginBottom: '10px', marginTop: '-10px'}}>
+                {preguntaActual.año} - Pregunta {preguntaActual.numeroPregunta}
+            </div>
+            {/* --------------------------------------- */}
+
             <h2>{preguntaActual.pregunta}</h2>
             <div className="opciones-container">
               {preguntaActual.opcionesMezcladas.map((opcion, index) => {
@@ -427,11 +439,19 @@ function App() {
           <select value={temaInput} onChange={e => setTemaInput(e.target.value)}>
             {listaTemas.map(tema => <option key={tema} value={tema}>{tema}</option>)}
           </select>
+
+          {/* --- NUEVOS INPUTS ADMIN --- */}
+          <div style={{display: 'flex', gap: '10px'}}>
+              <input type="text" placeholder="Año (ej. 2025)" value={añoInput} onChange={e => setAñoInput(e.target.value)} required style={{flex: 1}}/>
+              <input type="text" placeholder="Nº Pregunta" value={numeroPreguntaInput} onChange={e => setNumeroPreguntaInput(e.target.value)} required style={{flex: 1}}/>
+          </div>
+          {/* -------------------------- */}
+
           <textarea placeholder="Enunciado de la pregunta..." value={nuevaPregunta} onChange={e => setNuevaPregunta(e.target.value)} required />
           {opcionesForm.map((op, i) => (
             <input key={i} type="text" placeholder={`Opción ${String.fromCharCode(65 + i)}`} value={op} onChange={e => {
               const nuevasOpciones = [...opcionesForm];
-              nuepciones[i] = e.target.value;
+              nuevasOpciones[i] = e.target.value;
               setOpcionesForm(nuevasOpciones);
             }} required />
           ))}
