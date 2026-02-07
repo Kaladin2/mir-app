@@ -182,21 +182,20 @@ function App() {
       alert(`Examen finalizado.\nCorrectas: ${corr}\nIncorrectas: ${inc}\nEn Blanco: ${bla}`);
   };
 
-  // --- CAMBIO: FUNCIÓN PARA COPIAR PREGUNTA ---
+  // --- CAMBIO: LÓGICA DE COPIADO ACTUALIZADA ---
   const copiarPregunta = () => {
       const pregunta = preguntasJuego[preguntaActualIndex];
       if (!pregunta) return;
 
-      const textoACopiar = `Pregunta: ${pregunta.pregunta}\n\n` +
+      // Solo copiar pregunta y opciones
+      const textoACopiar = `${pregunta.pregunta}\n\n` +
                           `A) ${pregunta.opcionA}\n` +
                           `B) ${pregunta.opcionB}\n` +
                           `C) ${pregunta.opcionC}\n` +
-                          `D) ${pregunta.opcionD}\n\n` +
-                          `Respuesta Correcta: ${pregunta.correcta}\n` +
-                          `Explicación: ${pregunta.explicacion}`;
+                          `D) ${pregunta.opcionD}`;
 
       navigator.clipboard.writeText(textoACopiar)
-          .then(() => alert("Pregunta copiada al portapapeles"))
+          .then(() => alert("Pregunta y respuestas copiadas al portapapeles"))
           .catch(err => console.error("Error al copiar: ", err));
   };
   // ---------------------------------------------
@@ -344,7 +343,6 @@ function App() {
         <div className="examen-container">
           <div className="area-pregunta">
             <div className="progreso">
-              {/* --- CAMBIO: BOTÓN COPIAR JUNTO AL PROGRESO --- */}
               <div style={{display: 'flex', alignItems: 'center'}}>
                 <span>Pregunta {preguntaActualIndex + 1} / {preguntasJuego.length}</span>
                 <button 
@@ -364,7 +362,6 @@ function App() {
                   Copiar pregunta
                 </button>
               </div>
-              {/* --------------------------------------------- */}
               <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
             </div>
             <h2>{preguntaActual.pregunta}</h2>
@@ -434,7 +431,7 @@ function App() {
           {opcionesForm.map((op, i) => (
             <input key={i} type="text" placeholder={`Opción ${String.fromCharCode(65 + i)}`} value={op} onChange={e => {
               const nuevasOpciones = [...opcionesForm];
-              nuevasOpciones[i] = e.target.value;
+              nuepciones[i] = e.target.value;
               setOpcionesForm(nuevasOpciones);
             }} required />
           ))}
