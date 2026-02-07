@@ -39,9 +39,13 @@ function App() {
     "Investigacion", "UCI", "Endocrinologia"
   ];
 
+  // --- NUEVA LISTA DE AÑOS ---
+  const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025"];
+
   useEffect(() => {
     fetchPreguntas();
     setTemaInput(listaTemas[0]);
+    setAñoInput(listaAños[0]); // Establecer año por defecto
   }, []);
 
   async function fetchPreguntas() {
@@ -200,7 +204,6 @@ function App() {
           .catch(err => console.error("Error al copiar: ", err));
   };
 
-  // --- ACTUALIZADO PARA INSERTAR AÑO Y NÚMERO ---
   const agregarPregunta = async (e) => {
     e.preventDefault();
     const { error } = await supabase
@@ -228,7 +231,7 @@ function App() {
       setOpcionesForm(["", "", "", ""]);
       setRespuestaCorrectaInput(1);
       setExplicacionInput("");
-      setAñoInput("");
+      setAñoInput(listaAños[0]); // Resetear a año por defecto
       setNumeroPreguntaInput("");
       fetchPreguntas();
     }
@@ -370,11 +373,9 @@ function App() {
               <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
             </div>
 
-            {/* --- NUEVO: REFERENCIA DE LA PREGUNTA --- */}
             <div className="referencia-pregunta" style={{color: '#888', fontSize: '0.9rem', marginBottom: '10px', marginTop: '-10px'}}>
                 {preguntaActual.año} - Pregunta {preguntaActual.numeroPregunta}
             </div>
-            {/* --------------------------------------- */}
 
             <h2>{preguntaActual.pregunta}</h2>
             <div className="opciones-container">
@@ -440,10 +441,18 @@ function App() {
             {listaTemas.map(tema => <option key={tema} value={tema}>{tema}</option>)}
           </select>
 
-          {/* --- NUEVOS INPUTS ADMIN --- */}
+          {/* --- NUEVOS INPUTS ADMIN ACTUALIZADOS --- */}
           <div style={{display: 'flex', gap: '10px'}}>
-              <input type="text" placeholder="Año (ej. 2025)" value={añoInput} onChange={e => setAñoInput(e.target.value)} required style={{flex: 1}}/>
-              <input type="text" placeholder="Nº Pregunta" value={numeroPreguntaInput} onChange={e => setNumeroPreguntaInput(e.target.value)} required style={{flex: 1}}/>
+              <div style={{flex: 1}}>
+                  <label>Año</label>
+                  <select value={añoInput} onChange={e => setAñoInput(e.target.value)} required style={{width: '100%', padding: '10px'}}>
+                    {listaAños.map(año => <option key={año} value={año}>{año}</option>)}
+                  </select>
+              </div>
+              <div style={{flex: 1}}>
+                  <label>Nº Pregunta</label>
+                  <input type="text" placeholder="Ej. 12" value={numeroPreguntaInput} onChange={e => setNumeroPreguntaInput(e.target.value)} required style={{width: '100%'}}/>
+              </div>
           </div>
           {/* -------------------------- */}
 
