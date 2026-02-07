@@ -76,11 +76,11 @@ function App() {
     setOpcionesMezcladas(opcionesConId.map(o => o.texto));
     setIndiceCorrectaMezclada(opcionesConId.findIndex(o => o.esCorrecta) + 1);
     
-    // Al preparar pregunta, restauramos la respuesta seleccionada previamente si existe
+    // --- CAMBIO: INICIAR SIEMPRE EN NULL ---
     const respuestaGuardada = resultadosMapa[index]?.respuestaUsuario;
     setRespuestaSeleccionada(respuestaGuardada || null);
+    // ----------------------------------------
     
-    // En modo examen, no comprobamos hasta el final
     setComprobado(modoJuego === 'examen' ? examenFinalizado : false);
     
     setPreguntaActualIndex(index);
@@ -109,7 +109,7 @@ function App() {
   };
 
   const manejarSiguiente = () => {
-    // 1. Guardar la respuesta actual en el mapa sin comprobarla aún (en modo examen)
+    // 1. Guardar la respuesta actual en el mapa (sea null o un valor)
     setResultadosMapa(prev => prev.map(item => 
         item.index === preguntaActualIndex 
           ? { ...item, respuestaUsuario: respuestaSeleccionada } 
@@ -122,11 +122,11 @@ function App() {
     }
   };
 
-  const comprobarRespuestaPractica = (esEnBlanco = false) => {
+  const comprobarRespuestaPractica = () => {
     setComprobado(true);
     let resultado = 'incorrecto';
     
-    if (esEnBlanco) {
+    if (respuestaSeleccionada === null) {
       resultado = 'blanco';
       setEnBlanco(prev => prev + 1);
     } else {
@@ -152,15 +152,13 @@ function App() {
       let inc = 0;
       let bla = 0;
 
-      // Calcular resultados finales
+      // Calcular resultados finales comparando respuestas
       const nuevosResultados = resultadosMapa.map((item, index) => {
           const pregunta = preguntasJuego[index];
-          // Re-calcular índice correcta original para comparar
-          const opcionesArray = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
-          const indiceCorrectaReal = pregunta.correcta;
-          const textoCorrecto = opcionesArray[indiceCorrectaReal - 1];
           
-          // Buscar qué opción mezclada corresponde a la correcta real
+          // Re-mezclar opciones para encontrar el índice correcto en la vista actual
+          const opcionesArray = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
+          const textoCorrecto = opcionesArray[pregunta.correcta - 1];
           const indiceCorrectaMezclada = opcionesMezcladas.indexOf(textoCorrecto) + 1;
 
           let res = 'blanco';
@@ -370,21 +368,16 @@ function App() {
             )}
 
             <div className="footer-pregunta">
-              {modoJuego === 'practica' && (
-                  <button className="btn-secondary" onClick={() => comprobarRespuestaPractica(true)} disabled={comprobado}>
-                    Dejar en Blanco
-                  </button>
-              )}
+              {/* --- CAMBIO: ELIMINADO BOTÓN DEJAR EN BLANCO --- */}
               
               {modoJuego === 'practica' && (
-                <button className="btn-primary" onClick={() => comprobarRespuestaPractica(false)} disabled={!respuestaSeleccionada || comprobado}>
+                <button className="btn-primary" onClick={comprobarRespuestaPractica} disabled={!respuestaSeleccionada || comprobado}>
                   Comprobar
                 </button>
               )}
               
-              {/* --- BOTÓN SIGUIENTE/AVANZAR --- */}
               <button className="btn-next" onClick={manejarSiguiente} disabled={examenFinalizado || (modoJuego === 'practica' && !comprobado)}>
-                {modoJuego === 'examen' ? 'Siguiente' : 'Siguiente'}
+                Siguiente
               </button>
             </div>
           </div>
