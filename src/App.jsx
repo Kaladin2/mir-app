@@ -13,11 +13,6 @@ function App() {
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
   const [comprobado, setComprobado] = useState(false);
   
-  // --- CAMBIO: Estos estados ya no serán necesarios aquí ---
-  // const [indiceCorrectaMezclada, setIndiceCorrectaMezclada] = useState(null);
-  // const [opcionesMezcladas, setOpcionesMezcladas] = useState([]);
-  // ---------------------------------------------------------
-  
   const [resultadosMapa, setResultadosMapa] = useState([]); 
   const [modoJuego, setModoJuego] = useState('practica'); 
   const [examenFinalizado, setExamenFinalizado] = useState(false);
@@ -36,10 +31,9 @@ function App() {
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
-    "Farmacologia", "Ginecologia/Obstetricia", "Digestivo", "Respiratorio", 
+    "Farmacologia", "Ginecologia", "Digestivo", "Respiratorio", 
     "Oncologia", "Geriatria", "Urgencias y Emergencias", "Psiquiatria", 
-    "Investigacion", "UCI", "Endocrinologia", "Familia", "Salud Publica",
-    "Dermatologia", "Cardiologia", "Otorrinologia"
+    "Investigacion", "UCI", "Endocrinologia"
   ];
 
   useEffect(() => {
@@ -60,18 +54,19 @@ function App() {
 
   // --- LÓGICA DE JUEGO ---
   
-  // --- CAMBIO: Esta función ahora solo carga datos guardados ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
     
-    // Restaurar el estado de la respuesta y si fue comprobada
     const resultadoGuardado = resultadosMapa[index];
+    
+    // Restaurar selección si la había
     setRespuestaSeleccionada(resultadoGuardado?.respuestaUsuario || null);
     
-    // En modo práctica, si ya se comprobó, mantenemos el estado
+    // Restaurar estado de comprobación
     if (modoJuego === 'practica') {
-        setComprobado(resultadoGuardado?.resultado !== null && resultadoGuardado?.resultado !== 'blanco' || resultadoGuardado?.resultado === 'blanco');
+        // En práctica, si ya tenía resultado (incluido blanco), ya estaba comprobada
+        setComprobado(resultadoGuardado?.resultado !== null);
     } else {
         // Modo examen
         setComprobado(examenFinalizado);
@@ -79,20 +74,16 @@ function App() {
     
     setPreguntaActualIndex(index);
   };
-  // -------------------------------------------------------------
 
-  // --- CAMBIO SIGNIFICATIVO: EL SHUFFLE OCURRE AQUÍ ---
   const iniciarJuego = (preguntasSeleccionadas) => {
     if (preguntasSeleccionadas.length === 0) {
       alert("No hay preguntas disponibles");
       return;
     }
     
-    // 1. Mezclar las preguntas
     const mezcladas = [...preguntasSeleccionadas].sort(() => 0.5 - Math.random());
     const seleccionadas = mezcladas.slice(0, 50);
 
-    // 2. Mezclar las opciones de CADA pregunta UNA SOLA VEZ
     const preguntasConOpcionesMezcladas = seleccionadas.map(pregunta => {
         const opcionesOriginales = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
         const textoCorrectoOriginal = opcionesOriginales[pregunta.correcta - 1];
@@ -102,13 +93,11 @@ function App() {
             originalIndex: i + 1
         }));
 
-        // Fisher-Yates shuffle
         for (let i = opcionesParaMezclar.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [opcionesParaMezclar[i], opcionesParaMezclar[j]] = [opcionesParaMezclar[j], opcionesParaMezclar[i]];
         }
 
-        // Guardar las opciones mezcladas y el NUEVO índice correcto dentro del objeto pregunta
         return {
             ...pregunta,
             opcionesMezcladas: opcionesParaMezclar.map(o => o.texto),
@@ -117,11 +106,8 @@ function App() {
     });
     
     setPreguntasJuego(preguntasConOpcionesMezcladas);
-    
-    // Inicializar resultados
     setResultadosMapa(preguntasConOpcionesMezcladas.map((_, i) => ({ index: i, resultado: null, respuestaUsuario: null })));
     
-    // Resetear contadores
     setCorrectas(0);
     setIncorrectas(0);
     setEnBlanco(0);
@@ -130,20 +116,22 @@ function App() {
     setPaginaActual('juego');
     prepararPregunta(0);
   };
-  // -------------------------------------------------------
 
+  // --- CAMBIO: AHORA MANEJA MEJOR EL AVANCE ---
   const manejarSiguiente = () => {
-    // Guardar la respuesta actual en el mapa
+    // 1. Guardar estado actual
     setResultadosMapa(prev => prev.map(item => 
         item.index === preguntaActualIndex 
           ? { ...item, respuestaUsuario: respuestaSeleccionada } 
           : item
     ));
 
+    // 2. Avanzar
     if (preguntaActualIndex < preguntasJuego.length - 1) {
         prepararPregunta(preguntaActualIndex + 1);
     }
   };
+  // --------------------------------------------
 
   const comprobarRespuestaPractica = () => {
     setComprobado(true);
@@ -350,7 +338,6 @@ function App() {
             </div>
             <h2>{preguntaActual.pregunta}</h2>
             <div className="opciones-container">
-              {/* --- CAMBIO: Usar las opciones pre-mezcladas --- */}
               {preguntaActual.opcionesMezcladas.map((opcion, index) => {
                 let claseBoton = "boton-opcion";
                 
@@ -376,7 +363,6 @@ function App() {
                   </button>
                 );
               })}
-              {/* ----------------------------------------------- */}
             </div>
 
             {(comprobado || examenFinalizado) && preguntaActual.explicacion && (
@@ -393,9 +379,11 @@ function App() {
                 </button>
               )}
               
-              <button className="btn-next" onClick={manejarSiguiente} disabled={examenFinalizado || (modoJuego === 'practica' && !comprobado)}>
+              {/* --- CAMBIO: ELIMINADO EL 'DISABLED' QUE BLOQUEABA AVANZAR EN BLANCO --- */}
+              <button className="btn-next" onClick={manejarSiguiente} disabled={examenFinalizado}>
                 Siguiente
               </button>
+              {/* ---------------------------------------------------------------------- */}
             </div>
           </div>
         </div>
