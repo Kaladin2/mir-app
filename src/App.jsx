@@ -76,10 +76,8 @@ function App() {
     setOpcionesMezcladas(opcionesConId.map(o => o.texto));
     setIndiceCorrectaMezclada(opcionesConId.findIndex(o => o.esCorrecta) + 1);
     
-    // --- CAMBIO: INICIAR SIEMPRE EN NULL ---
     const respuestaGuardada = resultadosMapa[index]?.respuestaUsuario;
     setRespuestaSeleccionada(respuestaGuardada || null);
-    // ----------------------------------------
     
     setComprobado(modoJuego === 'examen' ? examenFinalizado : false);
     
@@ -351,7 +349,15 @@ function App() {
                 
                 return (
                   <button key={index} className={claseBoton} onClick={() => {
-                    if(!comprobado && !examenFinalizado) setRespuestaSeleccionada(index + 1);
+                    if(!comprobado && !examenFinalizado) {
+                        // --- CAMBIO: LÓGICA DE DESELECCIÓN ---
+                        if (respuestaSeleccionada === index + 1) {
+                            setRespuestaSeleccionada(null); // Deseleccionar
+                        } else {
+                            setRespuestaSeleccionada(index + 1); // Seleccionar
+                        }
+                        // -------------------------------------
+                    }
                   }}>
                     <span className="letra-opcion">{String.fromCharCode(65 + index)}</span>
                     {opcion}
@@ -368,8 +374,6 @@ function App() {
             )}
 
             <div className="footer-pregunta">
-              {/* --- CAMBIO: ELIMINADO BOTÓN DEJAR EN BLANCO --- */}
-              
               {modoJuego === 'practica' && (
                 <button className="btn-primary" onClick={comprobarRespuestaPractica} disabled={!respuestaSeleccionada || comprobado}>
                   Comprobar
