@@ -5,7 +5,7 @@ import './App.css'
 function App() {
   const [todasLasPreguntas, setTodasLasPreguntas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [paginaActual, setPaginaActual] = useState('menu'); // 'menu', 'modo', 'temas', 'juego', 'administrar'
+  const [paginaActual, setPaginaActual] = useState('menu'); // 'menu', 'modo', 'modo-tipo', 'temas', 'juego', 'administrar'
 
   // --- ESTADO DEL JUEGO ---
   const [preguntasJuego, setPreguntasJuego] = useState([]);
@@ -76,13 +76,16 @@ function App() {
     setOpcionesMezcladas(opcionesConId.map(o => o.texto));
     setIndiceCorrectaMezclada(opcionesConId.findIndex(o => o.esCorrecta) + 1);
     
-    setRespuestaSeleccionada(null);
-    setComprobado(false);
+    // Al preparar pregunta, restauramos la respuesta seleccionada previamente si existe
+    const respuestaGuardada = resultadosMapa[index]?.respuestaUsuario;
+    setRespuestaSeleccionada(respuestaGuardada || null);
+    
+    // En modo examen, no comprobamos hasta el final
+    setComprobado(modoJuego === 'examen' ? examenFinalizado : false);
     
     setPreguntaActualIndex(index);
   };
 
-  // MODIFICADA: Ahora recibe las preguntas directamente
   const iniciarJuego = (preguntasSeleccionadas) => {
     if (preguntasSeleccionadas.length === 0) {
       alert("No hay preguntas disponibles");
@@ -93,7 +96,7 @@ function App() {
     setPreguntasJuego(seleccionadas);
     
     // Inicializar mapa de resultados
-    setResultadosMapa(seleccionadas.map((_, i) => ({ index: i, resultado: null })));
+    setResultadosMapa(seleccionadas.map((_, i) => ({ index: i, resultado: null, respuestaUsuario: null })));
     
     // Resetear contadores
     setCorrectas(0);
@@ -105,7 +108,21 @@ function App() {
     prepararPregunta(0);
   };
 
-  const comprobarRespuesta = (esEnBlanco = false) => {
+  const manejarSiguiente = () => {
+    // 1. Guardar la respuesta actual en el mapa sin comprobarla aún (en modo examen)
+    setResultadosMapa(prev => prev.map(item => 
+        item.index === preguntaActualIndex 
+          ? { ...item, respuestaUsuario: respuestaSeleccionada } 
+          : item
+    ));
+
+    // 2. Avanzar
+    if (preguntaActualIndex < preguntasJuego.length - 1) {
+        prepararPregunta(preguntaActualIndex + 1);
+    }
+  };
+
+  const comprobarRespuestaPractica = (esEnBlanco = false) => {
     setComprobado(true);
     let resultado = 'incorrecto';
     
@@ -123,18 +140,49 @@ function App() {
       }
     }
 
-    // Actualizar el mapa
     setResultadosMapa(prev => prev.map(item => 
       item.index === preguntaActualIndex 
-        ? { ...item, resultado: resultado } 
+        ? { ...item, resultado: resultado, respuestaUsuario: respuestaSeleccionada } 
         : item
     ));
   };
   
   const finalizarExamen = () => {
+      let corr = 0;
+      let inc = 0;
+      let bla = 0;
+
+      // Calcular resultados finales
+      const nuevosResultados = resultadosMapa.map((item, index) => {
+          const pregunta = preguntasJuego[index];
+          // Re-calcular índice correcta original para comparar
+          const opcionesArray = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
+          const indiceCorrectaReal = pregunta.correcta;
+          const textoCorrecto = opcionesArray[indiceCorrectaReal - 1];
+          
+          // Buscar qué opción mezclada corresponde a la correcta real
+          const indiceCorrectaMezclada = opcionesMezcladas.indexOf(textoCorrecto) + 1;
+
+          let res = 'blanco';
+          if (item.respuestaUsuario === null) {
+              bla++;
+          } else if (item.respuestaUsuario === indiceCorrectaMezclada) {
+              res = 'correcto';
+              corr++;
+          } else {
+              res = 'incorrecto';
+              inc++;
+          }
+          return { ...item, resultado: res };
+      });
+      
+      setResultadosMapa(nuevosResultados);
+      setCorrectas(corr);
+      setIncorrectas(inc);
+      setEnBlanco(bla);
       setExamenFinalizado(true);
       setComprobado(true);
-      alert(`Examen finalizado. Correctas: ${correctas}, Incorrectas: ${incorrectas}`);
+      alert(`Examen finalizado.\nCorrectas: ${corr}\nIncorrectas: ${inc}\nEn Blanco: ${bla}`);
   };
 
   const agregarPregunta = async (e) => {
@@ -213,7 +261,7 @@ function App() {
       );
   }
 
-  // NUEVO: 3. SELECCIÓN DE TIPO (ALEATORIO O TEMA)
+  // 3. SELECCIÓN DE TIPO
   if (paginaActual === 'modo-tipo') {
       return (
           <div className="app-container">
@@ -280,7 +328,7 @@ function App() {
           </div>
           
           {modoJuego === 'examen' && !examenFinalizado && (
-              <button onClick={finalizarExamen} className="btn-primary" style={{marginTop: '10px'}}>Finalizar Examen</button>
+              <button onClick={finalizarExamen} className="btn-primary" style={{marginTop: '10px'}}>Verificar Examen</button>
           )}
         </div>
 
@@ -323,21 +371,20 @@ function App() {
 
             <div className="footer-pregunta">
               {modoJuego === 'practica' && (
-                  <button className="btn-secondary" onClick={() => comprobarRespuesta(true)} disabled={comprobado}>
+                  <button className="btn-secondary" onClick={() => comprobarRespuestaPractica(true)} disabled={comprobado}>
                     Dejar en Blanco
                   </button>
               )}
               
-              <button className="btn-primary" onClick={() => comprobarRespuesta(false)} disabled={!respuestaSeleccionada || comprobado || examenFinalizado}>
-                {modoJuego === 'practica' ? 'Comprobar' : 'Marcar Respuesta'}
-              </button>
+              {modoJuego === 'practica' && (
+                <button className="btn-primary" onClick={() => comprobarRespuestaPractica(false)} disabled={!respuestaSeleccionada || comprobado}>
+                  Comprobar
+                </button>
+              )}
               
-              <button className="btn-next" onClick={() => {
-                if (preguntaActualIndex < preguntasJuego.length - 1) {
-                  prepararPregunta(preguntaActualIndex + 1);
-                }
-              }} disabled={!comprobado && modoJuego === 'practica' || examenFinalizado && !comprobado}>
-                Siguiente
+              {/* --- BOTÓN SIGUIENTE/AVANZAR --- */}
+              <button className="btn-next" onClick={manejarSiguiente} disabled={examenFinalizado || (modoJuego === 'practica' && !comprobado)}>
+                {modoJuego === 'examen' ? 'Siguiente' : 'Siguiente'}
               </button>
             </div>
           </div>
