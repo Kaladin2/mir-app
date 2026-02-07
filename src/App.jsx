@@ -5,7 +5,7 @@ import './App.css'
 function App() {
   const [todasLasPreguntas, setTodasLasPreguntas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [paginaActual, setPaginaActual] = useState('menu'); // 'menu', 'juego', 'administrar'
+  const [paginaActual, setPaginaActual] = useState('menu'); // 'menu', 'modo', 'temas', 'juego', 'administrar'
 
   // --- ESTADO DEL JUEGO ---
   const [preguntasJuego, setPreguntasJuego] = useState([]);
@@ -15,6 +15,9 @@ function App() {
   const [indiceCorrectaMezclada, setIndiceCorrectaMezclada] = useState(null);
   const [opcionesMezcladas, setOpcionesMezcladas] = useState([]);
   const [resultadosMapa, setResultadosMapa] = useState([]); 
+  
+  const [modoJuego, setModoJuego] = useState('practica'); // 'practica' o 'examen'
+  const [examenFinalizado, setExamenFinalizado] = useState(false);
 
   // --- CONTADORES ---
   const [correctas, setCorrectas] = useState(0);
@@ -26,6 +29,7 @@ function App() {
   const [opcionesForm, setOpcionesForm] = useState(["", "", "", ""]);
   const [respuestaCorrectaInput, setRespuestaCorrectaInput] = useState(1);
   const [temaInput, setTemaInput] = useState("");
+  const [explicacionInput, setExplicacionInput] = useState(""); // NUEVO
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -71,8 +75,10 @@ function App() {
 
     setOpcionesMezcladas(opcionesConId.map(o => o.texto));
     setIndiceCorrectaMezclada(opcionesConId.findIndex(o => o.esCorrecta) + 1);
+    
     setRespuestaSeleccionada(null);
     setComprobado(false);
+    
     setPreguntaActualIndex(index);
   };
 
@@ -92,6 +98,7 @@ function App() {
     setCorrectas(0);
     setIncorrectas(0);
     setEnBlanco(0);
+    setExamenFinalizado(false);
     
     setPaginaActual('juego');
     prepararPregunta(0);
@@ -122,6 +129,12 @@ function App() {
         : item
     ));
   };
+  
+  const finalizarExamen = () => {
+      setExamenFinalizado(true);
+      setComprobado(true);
+      alert(`Examen finalizado. Correctas: ${correctas}, Incorrectas: ${incorrectas}`);
+  };
 
   const agregarPregunta = async (e) => {
     e.preventDefault();
@@ -135,7 +148,8 @@ function App() {
           opcionC: opcionesForm[2],
           opcionD: opcionesForm[3],
           correcta: parseInt(respuestaCorrectaInput),
-          tema: temaInput
+          tema: temaInput,
+          explicacion: explicacionInput // NUEVO
         },
       ]);
 
@@ -146,6 +160,7 @@ function App() {
       setNuevaPregunta("");
       setOpcionesForm(["", "", "", ""]);
       setRespuestaCorrectaInput(1);
+      setExplicacionInput(""); // NUEVO
       fetchPreguntas();
     }
   };
@@ -173,16 +188,32 @@ function App() {
             <h1>Centro de Entrenamiento MIR</h1>
           </header>
           <div className="menu-botones">
-            <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
-            <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
+            <button onClick={() => { setModoJuego('practica'); setPaginaActual('modo'); }} className="menu-btn primary">Preguntas Aleatorias (50)</button>
+            <button onClick={() => { setModoJuego('practica'); setPaginaActual('temas'); }} className="menu-btn secondary">Elegir Tema</button>
             <button onClick={verificarAdmin} className="menu-btn tertiary">Administrador</button>
           </div>
         </div>
       </div>
     );
   }
+  
+  // 2. SELECCIÓN DE MODO
+  if (paginaActual === 'modo') {
+      return (
+          <div className="app-container">
+              <div className="menu-box">
+                  <h2>Selecciona el Modo</h2>
+                  <div className="menu-botones">
+                      <button onClick={() => { setModoJuego('practica'); setPaginaActual('temas'); }} className="menu-btn primary">Modo Práctica</button>
+                      <button onClick={() => { setModoJuego('examen'); setPaginaActual('temas'); }} className="menu-btn secondary">Modo Examen</button>
+                      <button onClick={() => setPaginaActual('menu')} className="boton-volver">Volver</button>
+                  </div>
+              </div>
+          </div>
+      );
+  }
 
-  // 2. SELECCIÓN DE TEMAS
+  // 3. SELECCIÓN DE TEMAS
   if (paginaActual === 'temas') {
     return (
       <div className="app-container">
@@ -200,7 +231,7 @@ function App() {
     );
   }
 
-  // 3. VISTA DE JUEGO
+  // 4. VISTA DE JUEGO
   if (paginaActual === 'juego') {
     const preguntaActual = preguntasJuego[preguntaActualIndex];
     if (!preguntaActual) return <div className="app-container">No hay preguntas en este tema.</div>;
@@ -231,6 +262,10 @@ function App() {
             <div className="stat incorrecta">❌ {incorrectas}</div>
             <div className="stat blanco">⚪ {enBlanco}</div>
           </div>
+          
+          {modoJuego === 'examen' && !examenFinalizado && (
+              <button onClick={finalizarExamen} className="btn-primary" style={{marginTop: '10px'}}>Finalizar Examen</button>
+          )}
         </div>
 
         {/* Área de Pregunta */}
@@ -238,21 +273,23 @@ function App() {
           <div className="area-pregunta">
             <div className="progreso">
               <span>Pregunta {preguntaActualIndex + 1} / {preguntasJuego.length}</span>
-              <span className="tema-badge">{preguntaActual.tema}</span>
+              <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
             </div>
             <h2>{preguntaActual.pregunta}</h2>
             <div className="opciones-container">
               {opcionesMezcladas.map((opcion, index) => {
                 let claseBoton = "boton-opcion";
-                if (comprobado) {
+                
+                if (comprobado || examenFinalizado) {
                   if (index + 1 === indiceCorrectaMezclada) claseBoton += " correcto";
                   else if (index + 1 === respuestaSeleccionada) claseBoton += " incorrecto";
                 } else if (respuestaSeleccionada === index + 1) {
                   claseBoton += " seleccionado";
                 }
+                
                 return (
                   <button key={index} className={claseBoton} onClick={() => {
-                    if(!comprobado) setRespuestaSeleccionada(index + 1);
+                    if(!comprobado && !examenFinalizado) setRespuestaSeleccionada(index + 1);
                   }}>
                     <span className="letra-opcion">{String.fromCharCode(65 + index)}</span>
                     {opcion}
@@ -260,18 +297,32 @@ function App() {
                 );
               })}
             </div>
+
+            {/* --- NUEVO: AREA DE EXPLICACIÓN --- */}
+            {(comprobado || examenFinalizado) && preguntaActual.explicacion && (
+                <div className="area-explicacion">
+                    <h4>Explicación:</h4>
+                    <p>{preguntaActual.explicacion}</p>
+                </div>
+            )}
+            {/* --------------------------------- */}
+
             <div className="footer-pregunta">
-              <button className="btn-secondary" onClick={() => comprobarRespuesta(true)} disabled={comprobado}>
-                Dejar en Blanco
+              {modoJuego === 'practica' && (
+                  <button className="btn-secondary" onClick={() => comprobarRespuesta(true)} disabled={comprobado}>
+                    Dejar en Blanco
+                  </button>
+              )}
+              
+              <button className="btn-primary" onClick={() => comprobarRespuesta(false)} disabled={!respuestaSeleccionada || comprobado || examenFinalizado}>
+                {modoJuego === 'practica' ? 'Comprobar' : 'Marcar Respuesta'}
               </button>
-              <button className="btn-primary" onClick={() => comprobarRespuesta(false)} disabled={!respuestaSeleccionada || comprobado}>
-                Comprobar
-              </button>
+              
               <button className="btn-next" onClick={() => {
                 if (preguntaActualIndex < preguntasJuego.length - 1) {
                   prepararPregunta(preguntaActualIndex + 1);
                 }
-              }} disabled={!comprobado}>
+              }} disabled={!comprobado && modoJuego === 'practica' || examenFinalizado && !comprobado}>
                 Siguiente
               </button>
             </div>
@@ -281,7 +332,7 @@ function App() {
     );
   }
 
-  // 4. ADMINISTRADOR
+  // 5. ADMINISTRADOR
   if (paginaActual === 'administrar') {
     return (
       <div className="app-container">
@@ -302,6 +353,12 @@ function App() {
           ))}
           <label>Número Respuesta Correcta (1-4)</label>
           <input type="number" min="1" max="4" value={respuestaCorrectaInput} onChange={e => setRespuestaCorrectaInput(e.target.value)} required />
+          
+          {/* --- NUEVO: CAMPO EXPLICACIÓN --- */}
+          <label>Explicación</label>
+          <textarea placeholder="Por qué esta respuesta es correcta..." value={explicacionInput} onChange={e => setExplicacionInput(e.target.value)} />
+          {/* --------------------------------- */}
+
           <button type="submit" className="btn-primary">Guardar Pregunta</button>
         </form>
       </div>

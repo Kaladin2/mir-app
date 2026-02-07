@@ -226,3 +226,22 @@ body {
 .btn-secondary { background: #424242; color: white; }
 .btn-next { background: var(--success); color: white; }
 .boton-volver { background: #333; color: white; margin: 20px; }
+
+.area-explicacion {
+    margin-top: 25px;
+    padding: 15px;
+    background: #252525;
+    border-radius: 8px;
+    border-left: 4px solid var(--secondary);
+}
+
+.area-explicacion h4 {
+    margin: 0 0 10px 0;
+    color: var(--secondary);
+}
+
+.area-explicacion p {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.5;
+}
