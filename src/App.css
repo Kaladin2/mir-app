@@ -245,3 +245,13 @@ body {
     color: var(--text);
     line-height: 1.5;
 }
+
+/* --- CSS PARA EL FONDO DEL MENU --- */
+.menu-fondo {
+  background-image: url('/fondo.webp'); /* Asegúrate de que la ruta sea correcta */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  width: 100%;
+}

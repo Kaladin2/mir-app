@@ -28,7 +28,8 @@ function App() {
   const [respuestaCorrectaInput, setRespuestaCorrectaInput] = useState(1);
   const [temaInput, setTemaInput] = useState("");
   const [explicacionInput, setExplicacionInput] = useState("");
-  // --- NUEVOS ESTADOS ADMINISTRADOR ---
+  
+  // --- ESTADOS DE REFERENCIA ---
   const [añoInput, setAñoInput] = useState("");
   const [numeroPreguntaInput, setNumeroPreguntaInput] = useState("");
 
@@ -39,8 +40,8 @@ function App() {
     "Investigacion", "UCI", "Endocrinologia"
   ];
 
-  // --- NUEVA LISTA DE AÑOS ---
-  const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"];
+  // --- LISTA DE AÑOS ---
+  const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025"];
 
   useEffect(() => {
     fetchPreguntas();
@@ -218,8 +219,8 @@ function App() {
           correcta: parseInt(respuestaCorrectaInput),
           tema: temaInput,
           explicacion: explicacionInput,
-          año: añoInput, // <--- Nueva columna
-          numeroPregunta: numeroPreguntaInput // <--- Nueva columna
+          año: añoInput,
+          numeroPregunta: numeroPreguntaInput
         },
       ]);
 
@@ -231,7 +232,7 @@ function App() {
       setOpcionesForm(["", "", "", ""]);
       setRespuestaCorrectaInput(1);
       setExplicacionInput("");
-      setAñoInput(listaAños[0]); // Resetear a año por defecto
+      setAñoInput(listaAños[0]);
       setNumeroPreguntaInput("");
       fetchPreguntas();
     }
@@ -252,7 +253,8 @@ function App() {
 
   if (paginaActual === 'menu') {
     return (
-      <div className="app-container">
+      // CLASE menu-fondo aplicada solo aquí
+      <div className="app-container menu-fondo">
         <div className="menu-box">
           <header className="app-header">
             <h1>Centro de Entrenamiento MIR</h1>
@@ -373,11 +375,10 @@ function App() {
               <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
             </div>
 
-            {/* --- ACTUALIZADO: ESTILO DE REFERENCIA MÁS VISIBLE --- */}
+            {/* --- REFERENCIA VISIBLE --- */}
             <div className="referencia-pregunta" style={{color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', marginTop: '-5px'}}>
                 {preguntaActual.año} - Pregunta {preguntaActual.numeroPregunta}
             </div>
-            {/* ---------------------------------------------------- */}
 
             <h2>{preguntaActual.pregunta}</h2>
             <div className="opciones-container">
@@ -443,6 +444,7 @@ function App() {
             {listaTemas.map(tema => <option key={tema} value={tema}>{tema}</option>)}
           </select>
 
+          {/* --- INPUTS REFERENCIA --- */}
           <div style={{display: 'flex', gap: '10px'}}>
               <div style={{flex: 1}}>
                   <label>Año</label>
