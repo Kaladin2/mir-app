@@ -13,10 +13,10 @@ function App() {
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
   const [comprobado, setComprobado] = useState(false);
   
-  // --- CAMBIO AQUÍ: Ahora estos estados son cruciales ---
-  const [indiceCorrectaMezclada, setIndiceCorrectaMezclada] = useState(null);
-  const [opcionesMezcladas, setOpcionesMezcladas] = useState([]);
-  // ------------------------------------------------------
+  // --- CAMBIO: Estos estados ya no serán necesarios aquí ---
+  // const [indiceCorrectaMezclada, setIndiceCorrectaMezclada] = useState(null);
+  // const [opcionesMezcladas, setOpcionesMezcladas] = useState([]);
+  // ---------------------------------------------------------
   
   const [resultadosMapa, setResultadosMapa] = useState([]); 
   const [modoJuego, setModoJuego] = useState('practica'); 
@@ -59,54 +59,68 @@ function App() {
 
   // --- LÓGICA DE JUEGO ---
   
-  // --- CAMBIO SIGNIFICATIVO AQUÍ ---
+  // --- CAMBIO: Esta función ahora solo carga datos guardados ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
     
-    // 1. Obtener opciones originales
-    const opcionesOriginales = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
-    const textoCorrectoOriginal = opcionesOriginales[pregunta.correcta - 1];
-
-    // 2. Crear un array de objetos para mezclar manteniendo la referencia de cuál es correcta
-    let opcionesParaMezclar = opcionesOriginales.map((texto, i) => ({
-        texto: texto,
-        originalIndex: i + 1
-    }));
-
-    // 3. Fisher-Yates shuffle para mezclar solo estas opciones
-    for (let i = opcionesParaMezclar.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [opcionesParaMezclar[i], opcionesParaMezclar[j]] = [opcionesParaMezclar[j], opcionesParaMezclar[i]];
+    // Restaurar el estado de la respuesta y si fue comprobada
+    const resultadoGuardado = resultadosMapa[index];
+    setRespuestaSeleccionada(resultadoGuardado?.respuestaUsuario || null);
+    
+    // En modo práctica, si ya se comprobó, mantenemos el estado
+    if (modoJuego === 'practica') {
+        setComprobado(resultadoGuardado?.resultado !== null && resultadoGuardado?.resultado !== 'blanco' || resultadoGuardado?.resultado === 'blanco');
+    } else {
+        // Modo examen
+        setComprobado(examenFinalizado);
     }
-
-    // 4. Actualizar estados con las opciones mezcladas de ESTA pregunta
-    setOpcionesMezcladas(opcionesParaMezclar.map(o => o.texto));
-    
-    // 5. Encontrar cuál es la nueva posición de la respuesta correcta
-    const nuevaPosicionCorrecta = opcionesParaMezclar.findIndex(o => o.texto === textoCorrectoOriginal) + 1;
-    setIndiceCorrectaMezclada(nuevaPosicionCorrecta);
-    
-    // Resetear estados de respuesta para la nueva pregunta
-    const respuestaGuardada = resultadosMapa[index]?.respuestaUsuario;
-    setRespuestaSeleccionada(respuestaGuardada || null);
-    setComprobado(resultadosMapa[index]?.resultado !== null);
     
     setPreguntaActualIndex(index);
   };
-  // ----------------------------------
+  // -------------------------------------------------------------
 
+  // --- CAMBIO SIGNIFICATIVO: EL SHUFFLE OCURRE AQUÍ ---
   const iniciarJuego = (preguntasSeleccionadas) => {
     if (preguntasSeleccionadas.length === 0) {
       alert("No hay preguntas disponibles");
       return;
     }
+    
+    // 1. Mezclar las preguntas
     const mezcladas = [...preguntasSeleccionadas].sort(() => 0.5 - Math.random());
     const seleccionadas = mezcladas.slice(0, 50);
-    setPreguntasJuego(seleccionadas);
+
+    // 2. Mezclar las opciones de CADA pregunta UNA SOLA VEZ
+    const preguntasConOpcionesMezcladas = seleccionadas.map(pregunta => {
+        const opcionesOriginales = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
+        const textoCorrectoOriginal = opcionesOriginales[pregunta.correcta - 1];
+
+        let opcionesParaMezclar = opcionesOriginales.map((texto, i) => ({
+            texto: texto,
+            originalIndex: i + 1
+        }));
+
+        // Fisher-Yates shuffle
+        for (let i = opcionesParaMezclar.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [opcionesParaMezclar[i], opcionesParaMezclar[j]] = [opcionesParaMezclar[j], opcionesParaMezclar[i]];
+        }
+
+        // Guardar las opciones mezcladas y el NUEVO índice correcto dentro del objeto pregunta
+        return {
+            ...pregunta,
+            opcionesMezcladas: opcionesParaMezclar.map(o => o.texto),
+            indiceCorrectaMezclada: opcionesParaMezclar.findIndex(o => o.texto === textoCorrectoOriginal) + 1
+        };
+    });
     
-    setResultadosMapa(seleccionadas.map((_, i) => ({ index: i, resultado: null, respuestaUsuario: null })));
+    setPreguntasJuego(preguntasConOpcionesMezcladas);
     
+    // Inicializar resultados
+    setResultadosMapa(preguntasConOpcionesMezcladas.map((_, i) => ({ index: i, resultado: null, respuestaUsuario: null })));
+    
+    // Resetear contadores
     setCorrectas(0);
     setIncorrectas(0);
     setEnBlanco(0);
@@ -115,8 +129,10 @@ function App() {
     setPaginaActual('juego');
     prepararPregunta(0);
   };
+  // -------------------------------------------------------
 
   const manejarSiguiente = () => {
+    // Guardar la respuesta actual en el mapa
     setResultadosMapa(prev => prev.map(item => 
         item.index === preguntaActualIndex 
           ? { ...item, respuestaUsuario: respuestaSeleccionada } 
@@ -132,11 +148,13 @@ function App() {
     setComprobado(true);
     let resultado = 'incorrecto';
     
+    const preguntaActual = preguntasJuego[preguntaActualIndex];
+    
     if (respuestaSeleccionada === null) {
       resultado = 'blanco';
       setEnBlanco(prev => prev + 1);
     } else {
-      const esCorrecta = respuestaSeleccionada === indiceCorrectaMezclada;
+      const esCorrecta = respuestaSeleccionada === preguntaActual.indiceCorrectaMezclada;
       if (esCorrecta) {
         resultado = 'correcto';
         setCorrectas(prev => prev + 1);
@@ -161,11 +179,10 @@ function App() {
       const nuevosResultados = resultadosMapa.map((item, index) => {
           const pregunta = preguntasJuego[index];
           
-          // Re-calcular basado en la respuesta original
           let res = 'blanco';
           if (item.respuestaUsuario === null) {
               bla++;
-          } else if (item.respuestaUsuario === pregunta.correcta) { // AQUÍ ESTABA EL ERROR: Usar pregunta.correcta original
+          } else if (item.respuestaUsuario === pregunta.indiceCorrectaMezclada) {
               res = 'correcto';
               corr++;
           } else {
@@ -332,11 +349,12 @@ function App() {
             </div>
             <h2>{preguntaActual.pregunta}</h2>
             <div className="opciones-container">
-              {opcionesMezcladas.map((opcion, index) => {
+              {/* --- CAMBIO: Usar las opciones pre-mezcladas --- */}
+              {preguntaActual.opcionesMezcladas.map((opcion, index) => {
                 let claseBoton = "boton-opcion";
                 
                 if (comprobado || examenFinalizado) {
-                  if (index + 1 === indiceCorrectaMezclada) claseBoton += " correcto";
+                  if (index + 1 === preguntaActual.indiceCorrectaMezclada) claseBoton += " correcto";
                   else if (index + 1 === respuestaSeleccionada) claseBoton += " incorrecto";
                 } else if (respuestaSeleccionada === index + 1) {
                   claseBoton += " seleccionado";
@@ -357,6 +375,7 @@ function App() {
                   </button>
                 );
               })}
+              {/* ----------------------------------------------- */}
             </div>
 
             {(comprobado || examenFinalizado) && preguntaActual.explicacion && (
