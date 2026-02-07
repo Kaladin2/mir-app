@@ -124,9 +124,12 @@ function App() {
     setComprobado(true);
     let resultado = 'incorrecto';
     
+    // --- CAMBIO: LÓGICA REVISADA ---
     if (respuestaSeleccionada === null) {
       resultado = 'blanco';
       setEnBlanco(prev => prev + 1);
+      // Al ser en blanco, no cambiamos `respuestaSeleccionada` 
+      // así el usuario ve cuál era la correcta sin que la suya se marque como incorrecta.
     } else {
       const esCorrecta = respuestaSeleccionada === indiceCorrectaMezclada;
       if (esCorrecta) {
@@ -137,6 +140,7 @@ function App() {
         setIncorrectas(prev => prev + 1);
       }
     }
+    // --------------------------------
 
     setResultadosMapa(prev => prev.map(item => 
       item.index === preguntaActualIndex 
@@ -340,23 +344,25 @@ function App() {
               {opcionesMezcladas.map((opcion, index) => {
                 let claseBoton = "boton-opcion";
                 
+                // --- CAMBIO: LÓGICA DE CLASES PARA VERDE/ROJO ---
                 if (comprobado || examenFinalizado) {
+                  // Resaltar la correcta siempre en verde
                   if (index + 1 === indiceCorrectaMezclada) claseBoton += " correcto";
+                  // Resaltar la seleccionada por el usuario en rojo si es incorrecta
                   else if (index + 1 === respuestaSeleccionada) claseBoton += " incorrecto";
                 } else if (respuestaSeleccionada === index + 1) {
                   claseBoton += " seleccionado";
                 }
+                // -------------------------------------------------
                 
                 return (
                   <button key={index} className={claseBoton} onClick={() => {
                     if(!comprobado && !examenFinalizado) {
-                        // --- CAMBIO: LÓGICA DE DESELECCIÓN ---
                         if (respuestaSeleccionada === index + 1) {
-                            setRespuestaSeleccionada(null); // Deseleccionar
+                            setRespuestaSeleccionada(null);
                         } else {
-                            setRespuestaSeleccionada(index + 1); // Seleccionar
+                            setRespuestaSeleccionada(index + 1);
                         }
-                        // -------------------------------------
                     }
                   }}>
                     <span className="letra-opcion">{String.fromCharCode(65 + index)}</span>
@@ -375,8 +381,8 @@ function App() {
 
             <div className="footer-pregunta">
               {modoJuego === 'practica' && (
-                <button className="btn-primary" onClick={comprobarRespuestaPractica} disabled={!respuestaSeleccionada || comprobado}>
-                  Comprobar
+                <button className="btn-primary" onClick={comprobarRespuestaPractica} disabled={comprobado}>
+                  {respuestaSeleccionada === null ? 'Mostrar Respuesta' : 'Comprobar'}
                 </button>
               )}
               
