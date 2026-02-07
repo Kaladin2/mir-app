@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react' // <--- useRef añadido
 import { supabase } from './supabaseClient'
 import './App.css'
 
@@ -28,9 +28,13 @@ function App() {
   const [respuestaCorrectaInput, setRespuestaCorrectaInput] = useState(1);
   const [temaInput, setTemaInput] = useState("");
   const [explicacionInput, setExplicacionInput] = useState("");
-  // --- NUEVOS ESTADOS ADMINISTRADOR ---
   const [añoInput, setAñoInput] = useState("");
   const [numeroPreguntaInput, setNumeroPreguntaInput] = useState("");
+
+  // --- ESTADO DE LA MÚSICA ---
+  const [musicaReproduciendo, setMusicaReproduciendo] = useState(false);
+  // REFERENCIA AL AUDIO - Asegúrate de tener 'musica.mp3' en la carpeta /public
+  const audioRef = useRef(new Audio('/musica.mp3')); 
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -38,15 +42,46 @@ function App() {
     "Oncologia", "Geriatria", "Urgencias y Emergencias", "Psiquiatria", 
     "Investigacion", "UCI", "Endocrinologia"
   ];
-
-  // --- NUEVA LISTA DE AÑOS ---
-  const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"];
+  const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025"];
 
   useEffect(() => {
     fetchPreguntas();
     setTemaInput(listaTemas[0]);
-    setAñoInput(listaAños[0]); // Establecer año por defecto
+    setAñoInput(listaAños[0]);
+    
+    // Configurar audio
+    const audio = audioRef.current;
+    audio.loop = true;
+    audio.volume = 0.3; // Volumen bajo por defecto
   }, []);
+
+  // --- LÓGICA DE MÚSICA (PAUSA AUTOMÁTICA) ---
+  useEffect(() => {
+    const audio = audioRef.current;
+    
+    // Si entramos al juego, pausar música
+    if (paginaActual === 'juego') {
+      audio.pause();
+      setMusicaReproduciendo(false);
+    } 
+    // Si salimos del juego y estaba reproduciendo, reanudar
+    else if (musicaReproduciendo) {
+      audio.play().catch(e => console.log("Espera interacción usuario"));
+    }
+    
+    return () => audio.pause();
+  }, [paginaActual]);
+
+  const alternarMusica = () => {
+    const audio = audioRef.current;
+    if (musicaReproduciendo) {
+      audio.pause();
+    } else {
+      audio.play().catch(e => console.log("Error reproducción", e));
+    }
+    setMusicaReproduciendo(!musicaReproduciendo);
+  };
+  // ---------------------------------------------
 
   async function fetchPreguntas() {
     setLoading(true);
@@ -60,21 +95,16 @@ function App() {
   }
 
   // --- LÓGICA DE JUEGO ---
-  
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
-    
     const resultadoGuardado = resultadosMapa[index];
-    
     setRespuestaSeleccionada(resultadoGuardado?.respuestaUsuario || null);
-    
     if (modoJuego === 'practica') {
         setComprobado(resultadoGuardado?.resultado !== null);
     } else {
         setComprobado(examenFinalizado);
     }
-    
     setPreguntaActualIndex(index);
   };
 
@@ -83,50 +113,36 @@ function App() {
       alert("No hay preguntas disponibles");
       return;
     }
-    
     const mezcladas = [...preguntasSeleccionadas].sort(() => 0.5 - Math.random());
     const seleccionadas = mezcladas.slice(0, 50);
-
     const preguntasConOpcionesMezcladas = seleccionadas.map(pregunta => {
         const opcionesOriginales = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
         const textoCorrectoOriginal = opcionesOriginales[pregunta.correcta - 1];
-
-        let opcionesParaMezclar = opcionesOriginales.map((texto, i) => ({
-            texto: texto,
-            originalIndex: i + 1
-        }));
-
+        let opcionesParaMezclar = opcionesOriginales.map((texto, i) => ({ texto: texto, originalIndex: i + 1 }));
         for (let i = opcionesParaMezclar.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [opcionesParaMezclar[i], opcionesParaMezclar[j]] = [opcionesParaMezclar[j], opcionesParaMezclar[i]];
         }
-
         return {
             ...pregunta,
             opcionesMezcladas: opcionesParaMezclar.map(o => o.texto),
             indiceCorrectaMezclada: opcionesParaMezclar.findIndex(o => o.texto === textoCorrectoOriginal) + 1
         };
     });
-    
     setPreguntasJuego(preguntasConOpcionesMezcladas);
     setResultadosMapa(preguntasConOpcionesMezcladas.map((_, i) => ({ index: i, resultado: null, respuestaUsuario: null })));
-    
     setCorrectas(0);
     setIncorrectas(0);
     setEnBlanco(0);
     setExamenFinalizado(false);
-    
     setPaginaActual('juego');
     prepararPregunta(0);
   };
 
   const manejarSiguiente = () => {
     setResultadosMapa(prev => prev.map(item => 
-        item.index === preguntaActualIndex 
-          ? { ...item, respuestaUsuario: respuestaSeleccionada } 
-          : item
+        item.index === preguntaActualIndex ? { ...item, respuestaUsuario: respuestaSeleccionada } : item
     ));
-
     if (preguntaActualIndex < preguntasJuego.length - 1) {
         prepararPregunta(preguntaActualIndex + 1);
     }
@@ -135,9 +151,7 @@ function App() {
   const comprobarRespuestaPractica = () => {
     setComprobado(true);
     let resultado = 'incorrecto';
-    
     const preguntaActual = preguntasJuego[preguntaActualIndex];
-    
     if (respuestaSeleccionada === null) {
       resultado = 'blanco';
       setEnBlanco(prev => prev + 1);
@@ -151,56 +165,37 @@ function App() {
         setIncorrectas(prev => prev + 1);
       }
     }
-
     setResultadosMapa(prev => prev.map(item => 
-      item.index === preguntaActualIndex 
-        ? { ...item, resultado: resultado, respuestaUsuario: respuestaSeleccionada } 
-        : item
+      item.index === preguntaActualIndex ? { ...item, resultado: resultado, respuestaUsuario: respuestaSeleccionada } : item
     ));
   };
   
   const finalizarExamen = () => {
-      let corr = 0;
-      let inc = 0;
-      let bla = 0;
-
+      let corr = 0; let inc = 0; let bla = 0;
       const nuevosResultados = resultadosMapa.map((item, index) => {
           const pregunta = preguntasJuego[index];
-          
           let res = 'blanco';
-          if (item.respuestaUsuario === null) {
-              bla++;
-          } else if (item.respuestaUsuario === pregunta.indiceCorrectaMezclada) {
-              res = 'correcto';
-              corr++;
-          } else {
-              res = 'incorrecto';
-              inc++;
-          }
+          if (item.respuestaUsuario === null) { bla++; } 
+          else if (item.respuestaUsuario === pregunta.indiceCorrectaMezclada) { res = 'correcto'; corr++; } 
+          else { res = 'incorrecto'; inc++; }
           return { ...item, resultado: res };
       });
-      
       setResultadosMapa(nuevosResultados);
-      setCorrectas(corr);
-      setIncorrectas(inc);
-      setEnBlanco(bla);
-      setExamenFinalizado(true);
-      setComprobado(true);
+      setCorrectas(corr); setIncorrectas(inc); setEnBlanco(bla);
+      setExamenFinalizado(true); setComprobado(true);
       alert(`Examen finalizado.\nCorrectas: ${corr}\nIncorrectas: ${inc}\nEn Blanco: ${bla}`);
   };
 
   const copiarPregunta = () => {
       const pregunta = preguntasJuego[preguntaActualIndex];
       if (!pregunta) return;
-
       const textoACopiar = `${pregunta.pregunta}\n\n` +
                           `A) ${pregunta.opcionA}\n` +
                           `B) ${pregunta.opcionB}\n` +
                           `C) ${pregunta.opcionC}\n` +
                           `D) ${pregunta.opcionD}`;
-
       navigator.clipboard.writeText(textoACopiar)
-          .then(() => alert("Pregunta y respuestas copiadas al portapapeles"))
+          .then(() => alert("Pregunta copiada al portapapeles"))
           .catch(err => console.error("Error al copiar: ", err));
   };
 
@@ -208,66 +203,57 @@ function App() {
     e.preventDefault();
     const { error } = await supabase
       .from('preguntas')
-      .insert([
-        { 
+      .insert([{ 
           pregunta: nuevaPregunta,
-          opcionA: opcionesForm[0],
-          opcionB: opcionesForm[1],
-          opcionC: opcionesForm[2],
-          opcionD: opcionesForm[3],
+          opcionA: opcionesForm[0], opcionB: opcionesForm[1],
+          opcionC: opcionesForm[2], opcionD: opcionesForm[3],
           correcta: parseInt(respuestaCorrectaInput),
-          tema: temaInput,
-          explicacion: explicacionInput,
-          año: añoInput, // <--- Nueva columna
-          numeroPregunta: numeroPreguntaInput // <--- Nueva columna
-        },
-      ]);
-
-    if (error) {
-      alert("Error al guardar: " + error.message);
-    } else {
+          tema: temaInput, explicacion: explicacionInput,
+          año: añoInput, numeroPregunta: numeroPreguntaInput
+        }]);
+    if (error) { alert("Error al guardar: " + error.message); } 
+    else {
       alert("Pregunta añadida");
-      setNuevaPregunta("");
-      setOpcionesForm(["", "", "", ""]);
-      setRespuestaCorrectaInput(1);
-      setExplicacionInput("");
-      setAñoInput(listaAños[0]); // Resetear a año por defecto
-      setNumeroPreguntaInput("");
+      setNuevaPregunta(""); setOpcionesForm(["", "", "", ""]);
+      setRespuestaCorrectaInput(1); setExplicacionInput("");
+      setAñoInput(listaAños[0]); setNumeroPreguntaInput("");
       fetchPreguntas();
     }
   };
 
   const verificarAdmin = () => {
-    const password = prompt("Ingrese la contraseña de administrador:");
-    if (password === "91127") {
-      setPaginaActual('administrar');
-    } else {
-      alert("Contraseña incorrecta");
-    }
+    const password = prompt("Ingrese contraseña:");
+    if (password === "91127") { setPaginaActual('administrar'); } 
+    else { alert("Contraseña incorrecta"); }
   };
 
   if (loading) return <div className="app-container">Cargando...</div>;
 
   // --- RENDERIZADO DE VISTAS ---
+  return (
+    <>
+      {/* Botón música visible fuera del juego */}
+      {paginaActual !== 'juego' && (
+        <button onClick={alternarMusica} className="boton-musica">
+          {musicaReproduciendo ? "🔇 Pausar Música" : "🔊 Reproducir Música"}
+        </button>
+      )}
 
-  if (paginaActual === 'menu') {
-    return (
-      <div className="app-container">
-        <div className="menu-box">
-          <header className="app-header">
-            <h1>Centro de Entrenamiento MIR</h1>
-          </header>
-          <div className="menu-botones">
-            <button onClick={() => setPaginaActual('modo')} className="menu-btn primary">Iniciar Test</button>
-            <button onClick={verificarAdmin} className="menu-btn tertiary">Administrador</button>
+      {paginaActual === 'menu' && (
+        <div className="app-container menu-fondo">
+          <div className="menu-box">
+            <header className="app-header">
+              <h1>Centro de Entrenamiento MIR</h1>
+            </header>
+            <div className="menu-botones">
+              <button onClick={() => setPaginaActual('modo')} className="menu-btn primary">Iniciar Test</button>
+              <button onClick={verificarAdmin} className="menu-btn tertiary">Administrador</button>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
-  
-  if (paginaActual === 'modo') {
-      return (
+      )}
+      
+      {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">
                   <h2>Selecciona el Modo</h2>
@@ -278,204 +264,151 @@ function App() {
                   </div>
               </div>
           </div>
-      );
-  }
+      )}
 
-  if (paginaActual === 'modo-tipo') {
-      return (
+      {paginaActual === 'modo-tipo' && (
           <div className="app-container">
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
               </div>
           </div>
-      );
-  }
+      )}
 
-  if (paginaActual === 'temas') {
-    return (
-      <div className="app-container">
-        <button onClick={() => setPaginaActual('modo-tipo')} className="boton-volver">⬅ Volver</button>
-        <h2>Selecciona un Tema</h2>
-        <div className="temas-grid">
-          {listaTemas.map(tema => (
-            <button key={tema} className="tema-button" onClick={() => {
-              const preguntasTema = todasLasPreguntas.filter(p => p.tema === tema);
-              iniciarJuego(preguntasTema);
-            }}>{tema}</button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (paginaActual === 'juego') {
-    const preguntaActual = preguntasJuego[preguntaActualIndex];
-    if (!preguntaActual) return <div className="app-container">No hay preguntas en este tema.</div>;
-
-    return (
-      <div className="app-container" style={{flexDirection: 'row', alignItems: 'flex-start'}}>
-        <div className="panel-lateral">
-          <button onClick={() => setPaginaActual('menu')} className="boton-volver">Salir</button>
-          <h3>Mapa</h3>
-          <div className="mapa-preguntas">
-            {resultadosMapa.map((item, index) => {
-              let claseMapa = "boton-mapa";
-              if (item.resultado === 'correcto') claseMapa += " correcto";
-              else if (item.resultado === 'incorrecto') claseMapa += " incorrecto";
-              else if (item.resultado === 'blanco') claseMapa += " blanco";
-              if (preguntaActualIndex === index) claseMapa += " activo";
-              return (
-                <button key={index} className={claseMapa} onClick={() => prepararPregunta(index)}>
-                  {index + 1}
-                </button>
-              );
-            })}
+      {paginaActual === 'temas' && (
+        <div className="app-container">
+          <button onClick={() => setPaginaActual('modo-tipo')} className="boton-volver">⬅ Volver</button>
+          <h2>Selecciona un Tema</h2>
+          <div className="temas-grid">
+            {listaTemas.map(tema => (
+              <button key={tema} className="tema-button" onClick={() => {
+                const preguntasTema = todasLasPreguntas.filter(p => p.tema === tema);
+                iniciarJuego(preguntasTema);
+              }}>{tema}</button>
+            ))}
           </div>
-          
-          <div className="estadisticas-mini">
-            <div className="stat correcta">✅ {correctas}</div>
-            <div className="stat incorrecta">❌ {incorrectas}</div>
-            <div className="stat blanco">⚪ {enBlanco}</div>
-          </div>
-          
-          {modoJuego === 'examen' && !examenFinalizado && (
-              <button onClick={finalizarExamen} className="btn-primary" style={{marginTop: '10px'}}>Verificar Examen</button>
-          )}
         </div>
+      )}
 
-        <div className="examen-container">
-          <div className="area-pregunta">
-            <div className="progreso">
-              <div style={{display: 'flex', alignItems: 'center'}}>
-                <span>Pregunta {preguntaActualIndex + 1} / {preguntasJuego.length}</span>
-                <button 
-                  onClick={copiarPregunta} 
-                  className="boton-copiar"
-                  style={{
-                    marginLeft: '15px', 
-                    background: 'transparent', 
-                    border: '1px solid #666', 
-                    color: '#aaa', 
-                    borderRadius: '4px', 
-                    padding: '2px 8px', 
-                    cursor: 'pointer',
-                    fontSize: '0.8rem'
-                  }}
-                >
-                  Copiar pregunta
-                </button>
-              </div>
-              <span className="tema-badge">{preguntaActual.tema} ({modoJuego})</span>
-            </div>
-
-            {/* --- ACTUALIZADO: ESTILO DE REFERENCIA MÁS VISIBLE --- */}
-            <div className="referencia-pregunta" style={{color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', marginTop: '-5px'}}>
-                {preguntaActual.año} - Pregunta {preguntaActual.numeroPregunta}
-            </div>
-            {/* ---------------------------------------------------- */}
-
-            <h2>{preguntaActual.pregunta}</h2>
-            <div className="opciones-container">
-              {preguntaActual.opcionesMezcladas.map((opcion, index) => {
-                let claseBoton = "boton-opcion";
-                
-                if (comprobado || examenFinalizado) {
-                  if (index + 1 === preguntaActual.indiceCorrectaMezclada) claseBoton += " correcto";
-                  else if (index + 1 === respuestaSeleccionada) claseBoton += " incorrecto";
-                } else if (respuestaSeleccionada === index + 1) {
-                  claseBoton += " seleccionado";
-                }
-                
-                return (
-                  <button key={index} className={claseBoton} onClick={() => {
-                    if(!comprobado && !examenFinalizado) {
-                        if (respuestaSeleccionada === index + 1) {
-                            setRespuestaSeleccionada(null);
-                        } else {
-                            setRespuestaSeleccionada(index + 1);
-                        }
-                    }
-                  }}>
-                    <span className="letra-opcion">{String.fromCharCode(65 + index)}</span>
-                    {opcion}
-                  </button>
-                );
+      {paginaActual === 'juego' && (
+        <div className="app-container" style={{flexDirection: 'row', alignItems: 'flex-start'}}>
+          <div className="panel-lateral">
+            <button onClick={() => setPaginaActual('menu')} className="boton-volver">Salir</button>
+            <h3>Mapa</h3>
+            <div className="mapa-preguntas">
+              {resultadosMapa.map((item, index) => {
+                let claseMapa = "boton-mapa";
+                if (item.resultado === 'correcto') claseMapa += " correcto";
+                else if (item.resultado === 'incorrecto') claseMapa += " incorrecto";
+                else if (item.resultado === 'blanco') claseMapa += " blanco";
+                if (preguntaActualIndex === index) claseMapa += " activo";
+                return <button key={index} className={claseMapa} onClick={() => prepararPregunta(index)}>{index + 1}</button>
               })}
             </div>
-
-            {(comprobado || examenFinalizado) && preguntaActual.explicacion && (
-                <div className="area-explicacion">
-                    <h4>Explicación:</h4>
-                    <p>{preguntaActual.explicacion}</p>
-                </div>
+            <div className="estadisticas-mini">
+              <div className="stat correcta">✅ {correctas}</div>
+              <div className="stat incorrecta">❌ {incorrectas}</div>
+              <div className="stat blanco">⚪ {enBlanco}</div>
+            </div>
+            {modoJuego === 'examen' && !examenFinalizado && (
+                <button onClick={finalizarExamen} className="btn-primary" style={{marginTop: '10px'}}>Verificar Examen</button>
             )}
-
-            <div className="footer-pregunta">
-              {modoJuego === 'practica' && (
-                <button className="btn-primary" onClick={comprobarRespuestaPractica} disabled={comprobado}>
-                  {respuestaSeleccionada === null ? 'Mostrar Respuesta' : 'Comprobar'}
-                </button>
+          </div>
+          <div className="examen-container">
+            <div className="area-pregunta">
+              <div className="progreso">
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                  <span>Pregunta {preguntaActualIndex + 1} / {preguntasJuego.length}</span>
+                  <button onClick={copiarPregunta} className="boton-copiar" style={{marginLeft: '15px', background: 'transparent', border: '1px solid #666', color: '#aaa', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer', fontSize: '0.8rem'}}>
+                    Copiar pregunta
+                  </button>
+                </div>
+                <span className="tema-badge">{preguntasJuego[preguntaActualIndex]?.tema} ({modoJuego})</span>
+              </div>
+              <div className="referencia-pregunta" style={{color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '15px', marginTop: '-5px'}}>
+                  {preguntasJuego[preguntaActualIndex]?.año} - Pregunta {preguntasJuego[preguntaActualIndex]?.numeroPregunta}
+              </div>
+              <h2>{preguntasJuego[preguntaActualIndex]?.pregunta}</h2>
+              <div className="opciones-container">
+                {preguntasJuego[preguntaActualIndex]?.opcionesMezcladas.map((opcion, index) => {
+                  let claseBoton = "boton-opcion";
+                  if (comprobado || examenFinalizado) {
+                    if (index + 1 === preguntasJuego[preguntaActualIndex]?.indiceCorrectaMezclada) claseBoton += " correcto";
+                    else if (index + 1 === respuestaSeleccionada) claseBoton += " incorrecto";
+                  } else if (respuestaSeleccionada === index + 1) { claseBoton += " seleccionado"; }
+                  return (
+                    <button key={index} className={claseBoton} onClick={() => {
+                      if(!comprobado && !examenFinalizado) {
+                          setRespuestaSeleccionada(respuestaSeleccionada === index + 1 ? null : index + 1);
+                      }
+                    }}>
+                      <span className="letra-opcion">{String.fromCharCode(65 + index)}</span>
+                      {opcion}
+                    </button>
+                  );
+                })}
+              </div>
+              {(comprobado || examenFinalizado) && preguntasJuego[preguntaActualIndex]?.explicacion && (
+                  <div className="area-explicacion">
+                      <h4>Explicación:</h4>
+                      <p>{preguntasJuego[preguntaActualIndex]?.explicacion}</p>
+                  </div>
               )}
-              
-              <button className="btn-next" onClick={manejarSiguiente} disabled={examenFinalizado}>
-                Siguiente
-              </button>
+              <div className="footer-pregunta">
+                {modoJuego === 'practica' && (
+                  <button className="btn-primary" onClick={comprobarRespuestaPractica} disabled={comprobado}>
+                    {respuestaSeleccionada === null ? 'Mostrar Respuesta' : 'Comprobar'}
+                  </button>
+                )}
+                <button className="btn-next" onClick={manejarSiguiente} disabled={examenFinalizado}>Siguiente</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  if (paginaActual === 'administrar') {
-    return (
-      <div className="app-container">
-        <button onClick={() => setPaginaActual('menu')} className="boton-volver">⬅ Volver</button>
-        <h2>Administrar Preguntas</h2>
-        <form onSubmit={agregarPregunta} className="formulario-pregunta">
-          <label>Tema</label>
-          <select value={temaInput} onChange={e => setTemaInput(e.target.value)}>
-            {listaTemas.map(tema => <option key={tema} value={tema}>{tema}</option>)}
-          </select>
-
-          <div style={{display: 'flex', gap: '10px'}}>
-              <div style={{flex: 1}}>
-                  <label>Año</label>
-                  <select value={añoInput} onChange={e => setAñoInput(e.target.value)} required style={{width: '100%', padding: '10px'}}>
-                    {listaAños.map(año => <option key={año} value={año}>{año}</option>)}
-                  </select>
-              </div>
-              <div style={{flex: 1}}>
-                  <label>Nº Pregunta</label>
-                  <input type="text" placeholder="Ej. 12" value={numeroPreguntaInput} onChange={e => setNumeroPreguntaInput(e.target.value)} required style={{width: '100%'}}/>
-              </div>
-          </div>
-
-          <textarea placeholder="Enunciado de la pregunta..." value={nuevaPregunta} onChange={e => setNuevaPregunta(e.target.value)} required />
-          {opcionesForm.map((op, i) => (
-            <input key={i} type="text" placeholder={`Opción ${String.fromCharCode(65 + i)}`} value={op} onChange={e => {
-              const nuevasOpciones = [...opcionesForm];
-              nuevasOpciones[i] = e.target.value;
-              setOpcionesForm(nuevasOpciones);
-            }} required />
-          ))}
-          <label>Número Respuesta Correcta (1-4)</label>
-          <input type="number" min="1" max="4" value={respuestaCorrectaInput} onChange={e => setRespuestaCorrectaInput(e.target.value)} required />
-          
-          <label>Explicación</label>
-          <textarea placeholder="Por qué esta respuesta es correcta..." value={explicacionInput} onChange={e => setExplicacionInput(e.target.value)} />
-
-          <button type="submit" className="btn-primary">Guardar Pregunta</button>
-        </form>
-      </div>
-    );
-  }
-
-  return null;
+      {paginaActual === 'administrar' && (
+        <div className="app-container">
+          <button onClick={() => setPaginaActual('menu')} className="boton-volver">⬅ Volver</button>
+          <h2>Administrar Preguntas</h2>
+          <form onSubmit={agregarPregunta} className="formulario-pregunta">
+            <label>Tema</label>
+            <select value={temaInput} onChange={e => setTemaInput(e.target.value)}>
+              {listaTemas.map(tema => <option key={tema} value={tema}>{tema}</option>)}
+            </select>
+            <div style={{display: 'flex', gap: '10px'}}>
+                <div style={{flex: 1}}>
+                    <label>Año</label>
+                    <select value={añoInput} onChange={e => setAñoInput(e.target.value)} required style={{width: '100%', padding: '10px'}}>
+                      {listaAños.map(año => <option key={año} value={año}>{año}</option>)}
+                    </select>
+                </div>
+                <div style={{flex: 1}}>
+                    <label>Nº Pregunta</label>
+                    <input type="text" placeholder="Ej. 12" value={numeroPreguntaInput} onChange={e => setNumeroPreguntaInput(e.target.value)} required style={{width: '100%'}}/>
+                </div>
+            </div>
+            <textarea placeholder="Enunciado de la pregunta..." value={nuevaPregunta} onChange={e => setNuevaPregunta(e.target.value)} required />
+            {opcionesForm.map((op, i) => (
+              <input key={i} type="text" placeholder={`Opción ${String.fromCharCode(65 + i)}`} value={op} onChange={e => {
+                const nuevasOpciones = [...opcionesForm];
+                nuevasOpciones[i] = e.target.value;
+                setOpcionesForm(nuevasOpciones);
+              }} required />
+            ))}
+            <label>Número Respuesta Correcta (1-4)</label>
+            <input type="number" min="1" max="4" value={respuestaCorrectaInput} onChange={e => setRespuestaCorrectaInput(e.target.value)} required />
+            <label>Explicación</label>
+            <textarea placeholder="Por qué esta respuesta es correcta..." value={explicacionInput} onChange={e => setExplicacionInput(e.target.value)} />
+            <button type="submit" className="btn-primary">Guardar Pregunta</button>
+          </form>
+        </div>
+      )}
+    </>
+  );
 }
 export default App;
