@@ -33,11 +33,9 @@ function App() {
   // --- ESTADO Y REFERENCIAS DE AUDIO ---
   const [musicaReproduciendo, setMusicaReproduciendo] = useState(false);
   const audioRef = useRef(new Audio('/musica.mp3')); 
-  
-  // --- NUEVO: Estado para el sonido especial ---
   const audioEspecialRef = useRef(new Audio('/redstag.wav'));
   const temporizadorRef = useRef(null);
-  const [tiempoRestante, setTiempoRestante] = useState(""); // --- NUEVO: Para la cuenta atrás
+  const [tiempoRestante, setTiempoRestante] = useState(""); 
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -52,7 +50,6 @@ function App() {
     setTemaInput(listaTemas[0]);
     setAñoInput(listaAños[0]);
     
-    // Configurar audio de fondo
     const audio = audioRef.current;
     audio.loop = true;
     audio.volume = 0.3; 
@@ -73,9 +70,9 @@ function App() {
     return () => audio.pause();
   }, [paginaActual]);
 
-  // --- NUEVO: Lógica de la cuenta atrás ---
+  // --- LÓGICA DE LA CUENTA ATRÁS ---
   useEffect(() => {
-    if (paginaActual !== 'sorpresa') return; // Solo ejecutar si estamos en la vista sorpresa
+    if (paginaActual !== 'sorpresa') return; 
 
     const fechaObjetivo = new Date("September 11, 2027 00:00:00").getTime();
 
@@ -83,7 +80,6 @@ function App() {
       const ahora = new Date().getTime();
       const distancia = fechaObjetivo - ahora;
 
-      // Cálculos de tiempo
       const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
       const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
@@ -97,9 +93,8 @@ function App() {
       }
     }, 1000);
 
-    return () => clearInterval(intervalo); // Limpiar intervalo
+    return () => clearInterval(intervalo); 
   }, [paginaActual]);
-  // ---------------------------------------------
 
   const alternarMusica = () => {
     const audio = audioRef.current;
@@ -111,13 +106,12 @@ function App() {
     setMusicaReproduciendo(!musicaReproduciendo);
   };
 
-  // --- NUEVO: LÓGICA BOTÓN ESPECIAL ---
+  // --- LÓGICA BOTÓN ESPECIAL (5 SEGUNDOS) ---
   const iniciarTemporizador = () => {
     temporizadorRef.current = setTimeout(() => {
-      // Cuando termine el audio, ir a la sorpresa
       audioEspecialRef.current.play().then(() => {
         audioEspecialRef.current.onended = () => {
-            setPaginaActual('sorpresa'); // --- NUEVO: Cambiar de vista al terminar
+            setPaginaActual('sorpresa');
         };
       }).catch(e => console.log("Error audio especial", e));
     }, 5000);
@@ -126,7 +120,6 @@ function App() {
   const cancelarTemporizador = () => {
     clearTimeout(temporizadorRef.current);
   };
-  // ---------------------------------------------
 
   async function fetchPreguntas() {
     setLoading(true);
@@ -139,8 +132,7 @@ function App() {
     setLoading(false);
   }
 
-  // ... (funciones de juego: prepararPregunta, iniciarJuego, etc. - SE MANTIENEN IGUAL)
-  // [Copia aquí tus funciones de juego para que el código esté completo]
+  // --- LÓGICA DE JUEGO ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
@@ -272,7 +264,6 @@ function App() {
     if (password === "91127") { setPaginaActual('administrar'); } 
     else { alert("Contraseña incorrecta"); }
   };
-  // ---------------------------------------------
 
   if (loading) return <div className="app-container">Cargando...</div>;
 
@@ -316,15 +307,15 @@ function App() {
         </div>
       )}
       
-      {/* --- NUEVO: VISTA SORPRESA --- */}
+      {/* --- VISTA SORPRESA (ACTUALIZADO) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
           <div className="cuenta-atras-box">
-            <h2>¡Sorpresa activada!</h2>
             <p>Falta:</p>
             <div className="contador">{tiempoRestante}</div>
             <p>para tu sorpresa.</p>
-            <button onClick={() => setPaginaActual('menu')} className="menu-btn primary" style={{marginTop: '20px'}}>
+            
+            <button onClick={() => setPaginaActual('menu')} className="menu-btn primary" style={{marginTop: '30px'}}>
               Volver al Menú
             </button>
           </div>
@@ -332,7 +323,6 @@ function App() {
       )}
       {/* ------------------------------ */}
 
-      {/* ... [Resto de tus vistas igual: modo, modo-tipo, temas, juego, administrar] ... */}
       {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">

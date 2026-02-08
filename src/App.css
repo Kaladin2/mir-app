@@ -293,9 +293,9 @@ body {
   transform: scale(0.95);
 }
 
-/* --- ESTILOS PARA LA CUENTA ATRÁS --- */
+/* --- ESTILOS PARA LA CUENTA ATRÁS (ACTUALIZADO) --- */
 .cuenta-atras-box {
-  background: rgba(0, 0, 0, 0.85); /* Fondo oscuro para resaltar */
+  background: rgba(0, 0, 0, 0.85);
   padding: 50px;
   border-radius: 15px;
   text-align: center;
@@ -304,16 +304,24 @@ body {
   box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
+/* Título de la vista */
 .cuenta-atras-box h2 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   margin-bottom: 30px;
+  color: #ddd;
+}
+
+/* Estilo para el texto "Falta:" y "para tu sorpresa" */
+.cuenta-atras-box p {
+  font-size: 1.5rem; /* Tamaño de letra uniforme */
+  margin: 10px 0;
 }
 
 .contador {
-  font-size: 3rem;
-  font-family: monospace; /* Fuente monoespaciada para que no baile el texto */
+  font-size: 2.5rem; /* Tamaño uniforme con el texto */
+  font-family: monospace;
   font-weight: bold;
-  color: #4CAF50; /* Color verde destacado */
+  color: #4CAF50;
   margin: 20px 0;
   display: block;
 }
