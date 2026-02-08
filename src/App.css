@@ -270,3 +270,25 @@ body {
 .boton-musica:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* --- ESTILOS PARA EL BOTÓN ESPECIAL --- */
+.contenedor-imagen-boton {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px; /* Espacio con el título */
+}
+
+.imagen-boton-especial {
+  width: 100px; /* Ajusta el tamaño de la imagen */
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.imagen-boton-especial:hover {
+  transform: scale(1.05);
+}
+
+.imagen-boton-especial:active {
+  transform: scale(0.95);
+}

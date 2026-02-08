@@ -31,10 +31,13 @@ function App() {
   const [añoInput, setAñoInput] = useState("");
   const [numeroPreguntaInput, setNumeroPreguntaInput] = useState("");
 
-  // --- ESTADO DE LA MÚSICA ---
+  // --- ESTADO Y REFERENCIAS DE AUDIO ---
   const [musicaReproduciendo, setMusicaReproduciendo] = useState(false);
-  // REFERENCIA AL AUDIO - Asegúrate de tener 'musica.mp3' en la carpeta /public
+  // Referencia para la música de fondo - Asegúrate de tener 'musica.mp3' en /public
   const audioRef = useRef(new Audio('/musica.mp3')); 
+  // Referencia para el sonido especial - Asegúrate de tener 'redstag.wav' en /public
+  const audioEspecialRef = useRef(new Audio('/redstag.wav'));
+  const temporizadorRef = useRef(null);
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -49,22 +52,20 @@ function App() {
     setTemaInput(listaTemas[0]);
     setAñoInput(listaAños[0]);
     
-    // Configurar audio
+    // Configurar audio de fondo
     const audio = audioRef.current;
     audio.loop = true;
-    audio.volume = 0.3; // Volumen bajo por defecto
+    audio.volume = 0.3; 
   }, []);
 
-  // --- LÓGICA DE MÚSICA (PAUSA AUTOMÁTICA) ---
+  // --- LÓGICA DE MÚSICA (PAUSA AUTOMÁTICA EN JUEGO) ---
   useEffect(() => {
     const audio = audioRef.current;
     
-    // Si entramos al juego, pausar música
     if (paginaActual === 'juego') {
       audio.pause();
       setMusicaReproduciendo(false);
     } 
-    // Si salimos del juego y estaba reproduciendo, reanudar
     else if (musicaReproduciendo) {
       audio.play().catch(e => console.log("Espera interacción usuario"));
     }
@@ -80,6 +81,18 @@ function App() {
       audio.play().catch(e => console.log("Error reproducción", e));
     }
     setMusicaReproduciendo(!musicaReproduciendo);
+  };
+  // ---------------------------------------------
+
+  // --- LÓGICA BOTÓN ESPECIAL (5 SEGUNDOS) ---
+  const iniciarTemporizador = () => {
+    temporizadorRef.current = setTimeout(() => {
+      audioEspecialRef.current.play().catch(e => console.log("Error audio especial", e));
+    }, 5000);
+  };
+
+  const cancelarTemporizador = () => {
+    clearTimeout(temporizadorRef.current);
   };
   // ---------------------------------------------
 
@@ -232,7 +245,7 @@ function App() {
   // --- RENDERIZADO DE VISTAS ---
   return (
     <>
-      {/* Botón música con símbolos tipo play/pause */}
+      {/* Botón música */}
       {paginaActual !== 'juego' && (
         <button onClick={alternarMusica} className="boton-musica">
           {musicaReproduciendo ? "⏸" : "▶"}
@@ -243,6 +256,22 @@ function App() {
         <div className="app-container menu-fondo">
           <div className="menu-box">
             <header className="app-header">
+              
+              {/* --- IMAGEN-BOTÓN ESPECIAL --- */}
+              <div className="contenedor-imagen-boton">
+                <img 
+                  src="/ciervo.png" 
+                  alt="Botón Especial" 
+                  className="imagen-boton-especial"
+                  onMouseDown={iniciarTemporizador}
+                  onMouseUp={cancelarTemporizador}
+                  onMouseLeave={cancelarTemporizador}
+                  onTouchStart={iniciarTemporizador}
+                  onTouchEnd={cancelarTemporizador}
+                />
+              </div>
+              {/* ------------------------------ */}
+
               <h1>Centro de Entrenamiento MIR</h1>
             </header>
             <div className="menu-botones">
@@ -271,7 +300,7 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
@@ -396,7 +425,7 @@ function App() {
             {opcionesForm.map((op, i) => (
               <input key={i} type="text" placeholder={`Opción ${String.fromCharCode(65 + i)}`} value={op} onChange={e => {
                 const nuevasOpciones = [...opcionesForm];
-                nuevasOpciones[i] = e.target.value;
+                nuepciones[i] = e.target.value;
                 setOpcionesForm(nuevasOpciones);
               }} required />
             ))}
