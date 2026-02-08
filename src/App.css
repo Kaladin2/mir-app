@@ -292,3 +292,28 @@ body {
 .imagen-boton-especial:active {
   transform: scale(0.95);
 }
+
+/* --- ESTILOS PARA LA CUENTA ATRÁS --- */
+.cuenta-atras-box {
+  background: rgba(0, 0, 0, 0.85); /* Fondo oscuro para resaltar */
+  padding: 50px;
+  border-radius: 15px;
+  text-align: center;
+  color: white;
+  border: 2px solid #555;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.cuenta-atras-box h2 {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+}
+
+.contador {
+  font-size: 3rem;
+  font-family: monospace; /* Fuente monoespaciada para que no baile el texto */
+  font-weight: bold;
+  color: #4CAF50; /* Color verde destacado */
+  margin: 20px 0;
+  display: block;
+}

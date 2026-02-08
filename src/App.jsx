@@ -12,7 +12,6 @@ function App() {
   const [preguntaActualIndex, setPreguntaActualIndex] = useState(0);
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
   const [comprobado, setComprobado] = useState(false);
-  
   const [resultadosMapa, setResultadosMapa] = useState([]); 
   const [modoJuego, setModoJuego] = useState('practica'); 
   const [examenFinalizado, setExamenFinalizado] = useState(false);
@@ -33,11 +32,12 @@ function App() {
 
   // --- ESTADO Y REFERENCIAS DE AUDIO ---
   const [musicaReproduciendo, setMusicaReproduciendo] = useState(false);
-  // Referencia para la música de fondo - Asegúrate de tener 'musica.mp3' en /public
   const audioRef = useRef(new Audio('/musica.mp3')); 
-  // Referencia para el sonido especial - Asegúrate de tener 'redstag.wav' en /public
+  
+  // --- NUEVO: Estado para el sonido especial ---
   const audioEspecialRef = useRef(new Audio('/redstag.wav'));
   const temporizadorRef = useRef(null);
+  const [tiempoRestante, setTiempoRestante] = useState(""); // --- NUEVO: Para la cuenta atrás
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -55,7 +55,7 @@ function App() {
     // Configurar audio de fondo
     const audio = audioRef.current;
     audio.loop = true;
-    audio.volume = 0.1; 
+    audio.volume = 0.3; 
   }, []);
 
   // --- LÓGICA DE MÚSICA (PAUSA AUTOMÁTICA EN JUEGO) ---
@@ -73,6 +73,34 @@ function App() {
     return () => audio.pause();
   }, [paginaActual]);
 
+  // --- NUEVO: Lógica de la cuenta atrás ---
+  useEffect(() => {
+    if (paginaActual !== 'sorpresa') return; // Solo ejecutar si estamos en la vista sorpresa
+
+    const fechaObjetivo = new Date("September 11, 2027 00:00:00").getTime();
+
+    const intervalo = setInterval(() => {
+      const ahora = new Date().getTime();
+      const distancia = fechaObjetivo - ahora;
+
+      // Cálculos de tiempo
+      const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+      const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+
+      setTiempoRestante(`${dias}d : ${horas}h : ${minutos}m : ${segundos}s`);
+
+      if (distancia < 0) {
+        clearInterval(intervalo);
+        setTiempoRestante("¡LLEGÓ EL DÍA!");
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalo); // Limpiar intervalo
+  }, [paginaActual]);
+  // ---------------------------------------------
+
   const alternarMusica = () => {
     const audio = audioRef.current;
     if (musicaReproduciendo) {
@@ -82,12 +110,16 @@ function App() {
     }
     setMusicaReproduciendo(!musicaReproduciendo);
   };
-  // ---------------------------------------------
 
-  // --- LÓGICA BOTÓN ESPECIAL (5 SEGUNDOS) ---
+  // --- NUEVO: LÓGICA BOTÓN ESPECIAL ---
   const iniciarTemporizador = () => {
     temporizadorRef.current = setTimeout(() => {
-      audioEspecialRef.current.play().catch(e => console.log("Error audio especial", e));
+      // Cuando termine el audio, ir a la sorpresa
+      audioEspecialRef.current.play().then(() => {
+        audioEspecialRef.current.onended = () => {
+            setPaginaActual('sorpresa'); // --- NUEVO: Cambiar de vista al terminar
+        };
+      }).catch(e => console.log("Error audio especial", e));
     }, 5000);
   };
 
@@ -107,7 +139,8 @@ function App() {
     setLoading(false);
   }
 
-  // --- LÓGICA DE JUEGO ---
+  // ... (funciones de juego: prepararPregunta, iniciarJuego, etc. - SE MANTIENEN IGUAL)
+  // [Copia aquí tus funciones de juego para que el código esté completo]
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
@@ -239,6 +272,7 @@ function App() {
     if (password === "91127") { setPaginaActual('administrar'); } 
     else { alert("Contraseña incorrecta"); }
   };
+  // ---------------------------------------------
 
   if (loading) return <div className="app-container">Cargando...</div>;
 
@@ -246,7 +280,7 @@ function App() {
   return (
     <>
       {/* Botón música */}
-      {paginaActual !== 'juego' && (
+      {paginaActual !== 'juego' && paginaActual !== 'sorpresa' && (
         <button onClick={alternarMusica} className="boton-musica">
           {musicaReproduciendo ? "⏸" : "▶"}
         </button>
@@ -282,6 +316,23 @@ function App() {
         </div>
       )}
       
+      {/* --- NUEVO: VISTA SORPRESA --- */}
+      {paginaActual === 'sorpresa' && (
+        <div className="app-container menu-fondo">
+          <div className="cuenta-atras-box">
+            <h2>¡Sorpresa activada!</h2>
+            <p>Falta:</p>
+            <div className="contador">{tiempoRestante}</div>
+            <p>para tu sorpresa.</p>
+            <button onClick={() => setPaginaActual('menu')} className="menu-btn primary" style={{marginTop: '20px'}}>
+              Volver al Menú
+            </button>
+          </div>
+        </div>
+      )}
+      {/* ------------------------------ */}
+
+      {/* ... [Resto de tus vistas igual: modo, modo-tipo, temas, juego, administrar] ... */}
       {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">
@@ -425,7 +476,7 @@ function App() {
             {opcionesForm.map((op, i) => (
               <input key={i} type="text" placeholder={`Opción ${String.fromCharCode(65 + i)}`} value={op} onChange={e => {
                 const nuevasOpciones = [...opcionesForm];
-                nuepciones[i] = e.target.value;
+                nuevasOpciones[i] = e.target.value;
                 setOpcionesForm(nuevasOpciones);
               }} required />
             ))}
