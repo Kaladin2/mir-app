@@ -55,7 +55,7 @@ function App() {
     // Configurar audio de fondo
     const audio = audioRef.current;
     audio.loop = true;
-    audio.volume = 0.2; 
+    audio.volume = 0.1; 
   }, []);
 
   // --- LÓGICA DE MÚSICA (PAUSA AUTOMÁTICA EN JUEGO) ---

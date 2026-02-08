@@ -275,11 +275,11 @@ body {
 .contenedor-imagen-boton {
   display: flex;
   justify-content: center;
-  margin-bottom: 8px; /* Espacio con el título */
+  margin-bottom: 5px; /* Espacio con el título */
 }
 
 .imagen-boton-especial {
-  width: 70px; /* Ajusta el tamaño de la imagen */
+  width: 80px; /* Ajusta el tamaño de la imagen */
   height: auto;
   cursor: pointer;
   transition: transform 0.2s;
