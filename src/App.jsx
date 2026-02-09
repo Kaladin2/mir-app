@@ -81,7 +81,7 @@ function App() {
     if (paginaActual !== 'sorpresa') return; 
 
     // --- FECHA OBJETIVO ---
-    const fechaObjetivo = new Date("February 01, 2026 00:00:00").getTime();
+    const fechaObjetivo = new Date("September 11, 2027 12:59:59").getTime();
 
     const intervalo = setInterval(() => {
       const ahora = new Date().getTime();
@@ -96,7 +96,7 @@ function App() {
 
       if (distancia < 0) {
         clearInterval(intervalo);
-        setTiempoRestante("¡LLEGÓ EL DÍA!");
+        setTiempoRestante("0");
       }
     }, 1000);
 
@@ -105,7 +105,7 @@ function App() {
 
   // --- LÓGICA DEL CÓDIGO (PLAN B) ---
   const comprobarCodigo = () => {
-    if (codigoInput === "91127") { // CÓDIGO CORRECTO
+    if (codigoInput === "voyaleerelarchivo") { // CÓDIGO CORRECTO
       setCodigoCorrecto(true);
     } else {
       alert("Código incorrecto");
@@ -351,7 +351,7 @@ function App() {
               </>
             ) : (
               <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
-                Ver Video en YouTube
+                DISFRUTALO
               </button>
             )}
             
@@ -385,7 +385,7 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
