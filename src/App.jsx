@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
-import ReactPlayer from 'react-player' // --- IMPORTACIÓN DE REACTPLAYER ---
+import ReactPlayer from 'react-player'
 import './App.css'
 
 function App() {
@@ -38,13 +38,15 @@ function App() {
   const temporizadorRef = useRef(null);
   const [tiempoRestante, setTiempoRestante] = useState(""); 
   
-  // --- NUEVO: Estado para el código y el video ---
+  // --- ESTADO PARA EL CÓDIGO Y EL VIDEO ---
   const [codigoInput, setCodigoInput] = useState("");
   const [videoActivado, setVideoActivado] = useState(false);
   // --- URL DE TU VIDEO ---
   const urlVideo = "https://www.youtube.com/watch?v=1goAp0XmhZQ"; 
   const [videoPausado, setVideoPausado] = useState(false);
   const [volumenVideo, setVolumenVideo] = useState(0.5);
+  // --- NUEVO ESTADO PARA SONIDO ---
+  const [videoMutado, setVideoMutado] = useState(true);
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -84,7 +86,7 @@ function App() {
     if (paginaActual !== 'sorpresa') return; 
 
     // --- FECHA OBJETIVO ---
-    const fechaObjetivo = new Date("February 09, 2026 00:00:00").getTime();
+    const fechaObjetivo = new Date("February 01, 2025 00:00:00").getTime();
 
     const intervalo = setInterval(() => {
       const ahora = new Date().getTime();
@@ -110,6 +112,7 @@ function App() {
   const comprobarCodigo = () => {
     if (codigoInput === "91127") { // CÓDIGO CORRECTO
       setVideoActivado(true);
+      setVideoMutado(true); // --- IMPORTANTE: COMENZAR MUTADO ---
     } else {
       alert("Código incorrecto");
     }
@@ -120,7 +123,9 @@ function App() {
   };
 
   const cambiarVolumenVideo = (e) => {
-    setVolumenVideo(parseFloat(e.target.value));
+    const nuevoVolumen = parseFloat(e.target.value);
+    setVolumenVideo(nuevoVolumen);
+    if (nuevoVolumen > 0) setVideoMutado(false); // Desmutar si suben volumen
   };
   // ---------------------------------------------
 
@@ -334,11 +339,11 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (ACTUALIZADO) --- */}
+      {/* --- VISTA SORPRESA (CORREGIDO PARA AUTOPLAY) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
           
-          {/* Reproductor de YouTube - Siempre presente pero oculto si no está activado */}
+          {/* Contenedor del reproductor - SE MUESTRA SIEMPRE PARA CARGAR */}
           <div className={`reproductor-youtube-wrapper ${videoActivado ? '' : 'oculto'}`}>
             <ReactPlayer 
               url={urlVideo}
@@ -346,14 +351,17 @@ function App() {
               height='100%'
               playing={videoActivado && !videoPausado}
               volume={volumenVideo}
-              muted={false}
+              muted={videoMutado} // --- ESTADO DE MUTADO ---
               controls={false}
               config={{
                 youtube: {
                   playerVars: { 
                     autoplay: 1, 
                     controls: 0,
-                    modestbranding: 1 
+                    modestbranding: 1,
+                    // youtube player policy
+                    disablekb: 1,
+                    fs: 0
                   }
                 }
               }}
@@ -389,6 +397,10 @@ function App() {
             <div className="controles-video">
               <button onClick={alternarPausaVideo} className="menu-btn primary">
                 {videoPausado ? "▶ Play" : "⏸ Pausa"}
+              </button>
+              {/* --- BOTÓN PARA DESMUTAR --- */}
+              <button onClick={() => setVideoMutado(!videoMutado)} className="menu-btn secondary">
+                {videoMutado ? "🔇 Sonido" : "🔊 Sonido"}
               </button>
               <input 
                 type="range" 
