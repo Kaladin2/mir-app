@@ -103,15 +103,21 @@ function App() {
     return () => clearInterval(intervalo); 
   }, [paginaActual]);
 
-  // --- LÓGICA DEL CÓDIGO (PLAN B - CORREGIDO) ---
+  // --- LÓGICA DEL CÓDIGO (PLAN B - CORREGIDO PARA PRUEBAS) ---
   const comprobarCodigo = () => {
+    // --- CONTRASEÑA MAESTRA DE PRUEBAS ---
+    if (codigoInput === "sombrasdeidentidad") {
+      setCodigoCorrecto(true);
+      return;
+    }
+
     // --- VERIFICAR SI YA LLEGÓ LA FECHA ---
-    if (tiempoRestante !== "0") {
+    if (tiempoRestante !== "0!") {
       alert("Aún no es el momento.");
       return;
     }
 
-    if (codigoInput === "maridoymujer") { // CÓDIGO CORRECTO
+    if (codigoInput === "maridoymujer") { // CÓDIGO DE PRODUCCIÓN
       setCodigoCorrecto(true);
     } else {
       alert("Código incorrecto");
@@ -333,7 +339,7 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (PLAN B: CORREGIDO PARA FECHA) --- */}
+      {/* --- VISTA SORPRESA (PLAN B: CORREGIDO PARA PRUEBAS) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
           <div className="contenedor-final">
@@ -391,7 +397,7 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
