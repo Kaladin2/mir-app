@@ -348,29 +348,42 @@ body {
   border-radius: 5px;
 }
 
-/* NUEVO: Contenedor del reproductor de YouTube */
+/* --- ESTILOS ACTUALIZADOS --- */
+
+/* Contenedor del reproductor de YouTube - AHORA CON Z-INDEX SUPERIOR */
 .reproductor-youtube-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 5; /* Por encima de la capa oscura si fuera necesario, pero por debajo de los controles */
+  background: black;
+}
+
+/* Capa oscura de fondo para el formulario */
+.contenedor-final {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1; /* Detrás de todo */
-}
-
-/* Contenedor para que el input no tape el video */
-.contenedor-final {
-  position: relative;
   z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.85); /* Capa oscura más densa */
+  transition: opacity 0.5s ease;
 }
 
-/* Controles de video */
+/* NUEVO: Clase para ocultar el contenedor del formulario */
+.contenedor-final.oculto {
+  opacity: 0;
+  pointer-events: none; /* Para poder hacer click en el video/controles */
+}
+
+/* Controles de video - Z-INDEX ALTO */
 .controles-video {
   position: fixed;
   bottom: 20px;
@@ -379,7 +392,29 @@ body {
   background: rgba(0,0,0,0.7);
   padding: 10px;
   border-radius: 10px;
-  z-index: 100;
+  z-index: 20; /* --- EL MÁS ALTO --- */
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.input-codigo {
+  padding: 10px;
+  font-size: 1.2rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 200px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.boton-enviar {
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  margin-left: 10px;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
 }

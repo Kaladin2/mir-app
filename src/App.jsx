@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
-import ReactPlayer from 'react-player' // --- NUEVO: Importar ReactPlayer
+import ReactPlayer from 'react-player' // --- IMPORTACIÓN DE REACTPLAYER ---
 import './App.css'
 
 function App() {
@@ -8,7 +8,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [paginaActual, setPaginaActual] = useState('menu'); 
 
-  // --- ESTADO DEL JUEGO (SE MANTIENE IGUAL) ---
+  // --- ESTADO DEL JUEGO ---
   const [preguntasJuego, setPreguntasJuego] = useState([]);
   const [preguntaActualIndex, setPreguntaActualIndex] = useState(0);
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
@@ -17,12 +17,12 @@ function App() {
   const [modoJuego, setModoJuego] = useState('practica'); 
   const [examenFinalizado, setExamenFinalizado] = useState(false);
 
-  // --- CONTADORES (SE MANTIENE IGUAL) ---
+  // --- CONTADORES ---
   const [correctas, setCorrectas] = useState(0);
   const [incorrectas, setIncorrectas] = useState(0);
   const [enBlanco, setEnBlanco] = useState(0);
 
-  // --- ESTADOS FORMULARIO ADMINISTRADOR (SE MANTIENE IGUAL) ---
+  // --- ESTADOS FORMULARIO ADMINISTRADOR ---
   const [nuevaPregunta, setNuevaPregunta] = useState("");
   const [opcionesForm, setOpcionesForm] = useState(["", "", "", ""]);
   const [respuestaCorrectaInput, setRespuestaCorrectaInput] = useState(1);
@@ -41,8 +41,8 @@ function App() {
   // --- NUEVO: Estado para el código y el video ---
   const [codigoInput, setCodigoInput] = useState("");
   const [videoActivado, setVideoActivado] = useState(false);
-  // URL de tu video de Youtube
-  const urlVideo = "https://www.youtube.com/watch?v=hswqVIDA_Kc"; 
+  // --- DEFINE AQUÍ LA URL DE TU VIDEO ---
+  const urlVideo = "https://www.youtube.com/watch?v=1goAp0XmhZQ"; 
   const [videoPausado, setVideoPausado] = useState(false);
   const [volumenVideo, setVolumenVideo] = useState(0.5);
 
@@ -83,6 +83,7 @@ function App() {
   useEffect(() => {
     if (paginaActual !== 'sorpresa') return; 
 
+    // --- FECHA OBJETIVO ---
     const fechaObjetivo = new Date("February 09, 2026 00:00:00").getTime();
 
     const intervalo = setInterval(() => {
@@ -105,9 +106,9 @@ function App() {
     return () => clearInterval(intervalo); 
   }, [paginaActual]);
 
-  // --- NUEVO: LÓGICA DEL VIDEO (ACTUALIZADO PARA YOUTUBE) ---
+  // --- LÓGICA DEL VIDEO (ACTUALIZADO) ---
   const comprobarCodigo = () => {
-    if (codigoInput === "91127") { // TU CÓDIGO
+    if (codigoInput === "91127") { // CÓDIGO CORRECTO
       setVideoActivado(true);
     } else {
       alert("Código incorrecto");
@@ -158,7 +159,7 @@ function App() {
     setLoading(false);
   }
 
-  // --- LÓGICA DE JUEGO (SE MANTIENE IGUAL) ---
+  // --- LÓGICA DE JUEGO ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
@@ -333,25 +334,24 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (ACTUALIZADO CON REACTPLAYER) --- */}
+      {/* --- VISTA SORPRESA (ACTUALIZADO) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
           
-          {/* NUEVO: Reproductor de YouTube */}
-          {videoActivado && (
-            <div className="reproductor-youtube-wrapper">
-              <ReactPlayer 
-                url={urlVideo}
-                width='100%'
-                height='100%'
-                playing={!videoPausado}
-                volume={volumenVideo}
-                muted={false}
-                style={{ position: 'absolute', top: 0, left: 0 }}
-              />
-            </div>
-          )}
+          {/* Reproductor de YouTube - Siempre presente pero oculto si no está activado */}
+          <div className="reproductor-youtube-wrapper">
+            <ReactPlayer 
+              url={urlVideo}
+              width='100%'
+              height='100%'
+              playing={videoActivado && !videoPausado}
+              volume={volumenVideo}
+              muted={false}
+              style={{ position: 'absolute', top: 0, left: 0 }}
+            />
+          </div>
 
+          {/* Formulario de código - Se oculta al activar el video */}
           <div className={`contenedor-final ${videoActivado ? 'oculto' : ''}`}>
             <h2>Sorpresa</h2>
             <p>Falta:</p>
@@ -374,7 +374,7 @@ function App() {
             </button>
           </div>
 
-          {/* --- CONTROLES DE VIDEO --- */}
+          {/* --- CONTROLES DE VIDEO -  --- */}
           {videoActivado && (
             <div className="controles-video">
               <button onClick={alternarPausaVideo} className="menu-btn primary">
