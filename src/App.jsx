@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
-import ReactPlayer from 'react-player' 
 import './App.css'
 
 function App() {
@@ -38,14 +37,11 @@ function App() {
   const temporizadorRef = useRef(null);
   const [tiempoRestante, setTiempoRestante] = useState(""); 
   
-  // --- NUEVO: Estado para el código y el video ---
+  // --- ESTADO PARA EL CÓDIGO (PLAN B) ---
   const [codigoInput, setCodigoInput] = useState("");
-  const [videoActivado, setVideoActivado] = useState(false);
+  const [codigoCorrecto, setCodigoCorrecto] = useState(false);
   // --- DEFINE AQUÍ LA URL DE TU VIDEO ---
   const urlVideo = "https://www.youtube.com/watch?v=1goAp0XmhZQ"; 
-  const [videoPausado, setVideoPausado] = useState(false);
-  const [volumenVideo, setVolumenVideo] = useState(0.5);
-  const [videoMutado, setVideoMutado] = useState(true); // --- IMPORTANTE PARA AUTOPLAY ---
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -85,7 +81,7 @@ function App() {
     if (paginaActual !== 'sorpresa') return; 
 
     // --- FECHA OBJETIVO ---
-    const fechaObjetivo = new Date("February 01, 2025 00:00:00").getTime();
+    const fechaObjetivo = new Date("February 01, 2026 00:00:00").getTime();
 
     const intervalo = setInterval(() => {
       const ahora = new Date().getTime();
@@ -107,24 +103,17 @@ function App() {
     return () => clearInterval(intervalo); 
   }, [paginaActual]);
 
-  // --- LÓGICA DEL VIDEO (ACTUALIZADO) ---
+  // --- LÓGICA DEL CÓDIGO (PLAN B) ---
   const comprobarCodigo = () => {
     if (codigoInput === "91127") { // CÓDIGO CORRECTO
-      setVideoActivado(true);
-      setVideoMutado(true); // Siempre iniciar mutado para permitir autoplay
+      setCodigoCorrecto(true);
     } else {
       alert("Código incorrecto");
     }
   };
 
-  const alternarPausaVideo = () => {
-    setVideoPausado(!videoPausado);
-  };
-
-  const cambiarVolumenVideo = (e) => {
-    const nuevoVolumen = parseFloat(e.target.value);
-    setVolumenVideo(nuevoVolumen);
-    if (nuevoVolumen > 0) setVideoMutado(false); // Desmutar si suben volumen
+  const abrirVideoEnlace = () => {
+    window.open(urlVideo, "_blank"); // Abre en una pestaña nueva
   };
   // ---------------------------------------------
 
@@ -338,80 +327,41 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (ACTUALIZADO) --- */}
+      {/* --- VISTA SORPRESA (PLAN B: BOTÓN A YOUTUBE) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
-          
-          {/* Reproductor de YouTube - Ocupa toda la pantalla */}
-          <div className={`reproductor-youtube-wrapper ${videoActivado ? '' : 'oculto'}`}>
-            <ReactPlayer 
-              url={urlVideo}
-              width='100%'
-              height='100%'
-              playing={videoActivado && !videoPausado}
-              volume={volumenVideo}
-              muted={videoMutado} // --- ESTADO DE MUTADO ---
-              controls={false}
-              config={{
-                youtube: {
-                  playerVars: { 
-                    autoplay: 1, 
-                    controls: 0,
-                    modestbranding: 1,
-                    disablekb: 1,
-                    fs: 0,
-                    rel: 0
-                  }
-                }
-              }}
-            />
-          </div>
-
-          {/* Formulario de código - Flotando sobre el video */}
-          <div className={`contenedor-final ${videoActivado ? 'oculto' : ''}`}>
+          <div className="contenedor-final">
             <h2>Sorpresa</h2>
             <p>Falta:</p>
             <div className="contador">{tiempoRestante}</div>
             <p>para tu sorpresa.</p>
             
-            <input 
-              type="password" 
-              placeholder="Código" 
-              className="input-codigo"
-              value={codigoInput}
-              onChange={e => setCodigoInput(e.target.value)}
-            />
-            <button onClick={comprobarCodigo} className="boton-enviar">
-              Activar
-            </button>
+            {!codigoCorrecto ? (
+              <>
+                <input 
+                  type="password" 
+                  placeholder="Código" 
+                  className="input-codigo"
+                  value={codigoInput}
+                  onChange={e => setCodigoInput(e.target.value)}
+                />
+                <button onClick={comprobarCodigo} className="boton-enviar">
+                  Activar
+                </button>
+              </>
+            ) : (
+              <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
+                Ver Video en YouTube
+              </button>
+            )}
             
-            <button onClick={() => setPaginaActual('menu')} className="menu-btn primary" style={{marginTop: '30px'}}>
+            <button onClick={() => {
+              setCodigoCorrecto(false);
+              setPaginaActual('menu');
+            }} className="menu-btn tertiary" style={{marginTop: '30px'}}>
               Volver al Menú
             </button>
           </div>
-
-          {/* --- CONTROLES DE VIDEO - SOLO SI videoActivado ES TRUE --- */}
-          {videoActivado && (
-            <div className="controles-video">
-              <button onClick={alternarPausaVideo} className="menu-btn primary">
-                {videoPausado ? "▶ Play" : "⏸ Pausa"}
-              </button>
-              {/* --- BOTÓN PARA DESMUTAR --- */}
-              <button onClick={() => setVideoMutado(!videoMutado)} className="menu-btn secondary">
-                {videoMutado ? "🔇 Sonido" : "🔊 Sonido"}
-              </button>
-              <input 
-                type="range" 
-                min="0" max="1" step="0.1" 
-                value={volumenVideo} 
-                onChange={cambiarVolumenVideo}
-              />
-              <button onClick={() => {
-                setVideoActivado(false);
-                setPaginaActual('menu');
-              }} className="menu-btn tertiary">Volver al Menú</button>
-            </div>
-          )}
         </div>
       )}
       {/* ------------------------------ */}
