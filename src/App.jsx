@@ -363,7 +363,7 @@ function App() {
               </>
             ) : (
               <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
-                Ver Video en YouTube
+                Pulsa aqui
               </button>
             )}
             
