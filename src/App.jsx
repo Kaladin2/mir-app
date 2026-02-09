@@ -81,7 +81,7 @@ function App() {
     if (paginaActual !== 'sorpresa') return; 
 
     // --- FECHA OBJETIVO ---
-    const fechaObjetivo = new Date("September 11, 2027 12:59:59").getTime();
+    const fechaObjetivo = new Date("September 11, 2027 00:00:00").getTime();
 
     const intervalo = setInterval(() => {
       const ahora = new Date().getTime();
@@ -103,9 +103,15 @@ function App() {
     return () => clearInterval(intervalo); 
   }, [paginaActual]);
 
-  // --- LÓGICA DEL CÓDIGO (PLAN B) ---
+  // --- LÓGICA DEL CÓDIGO (PLAN B - CORREGIDO) ---
   const comprobarCodigo = () => {
-    if (codigoInput === "voyaleerelarchivo") { // CÓDIGO CORRECTO
+    // --- VERIFICAR SI YA LLEGÓ LA FECHA ---
+    if (tiempoRestante !== "0") {
+      alert("Aún no es el momento.");
+      return;
+    }
+
+    if (codigoInput === "maridoymujer") { // CÓDIGO CORRECTO
       setCodigoCorrecto(true);
     } else {
       alert("Código incorrecto");
@@ -327,7 +333,7 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (PLAN B: BOTÓN A YOUTUBE) --- */}
+      {/* --- VISTA SORPRESA (PLAN B: CORREGIDO PARA FECHA) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
           <div className="contenedor-final">
@@ -351,7 +357,7 @@ function App() {
               </>
             ) : (
               <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
-                DISFRUTALO
+                Ver Video en YouTube
               </button>
             )}
             
@@ -385,7 +391,7 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
