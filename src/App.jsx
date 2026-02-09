@@ -83,7 +83,7 @@ function App() {
   useEffect(() => {
     if (paginaActual !== 'sorpresa') return; 
 
-    const fechaObjetivo = new Date("September 11, 2027 00:00:00").getTime();
+    const fechaObjetivo = new Date("February 09, 2026 00:00:00").getTime();
 
     const intervalo = setInterval(() => {
       const ahora = new Date().getTime();
