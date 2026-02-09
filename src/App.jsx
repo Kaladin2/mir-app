@@ -30,12 +30,19 @@ function App() {
   const [añoInput, setAñoInput] = useState("");
   const [numeroPreguntaInput, setNumeroPreguntaInput] = useState("");
 
-  // --- ESTADO Y REFERENCIAS DE AUDIO ---
+  // --- ESTADO Y REFERENCIAS DE AUDIO/VIDEO ---
   const [musicaReproduciendo, setMusicaReproduciendo] = useState(false);
   const audioRef = useRef(new Audio('/musica.mp3')); 
   const audioEspecialRef = useRef(new Audio('/redstag.wav'));
   const temporizadorRef = useRef(null);
   const [tiempoRestante, setTiempoRestante] = useState(""); 
+  
+  // --- NUEVO: Estado para el código y el video ---
+  const [codigoInput, setCodigoInput] = useState("");
+  const [videoActivado, setVideoActivado] = useState(false);
+  const videoRef = useRef(null);
+  const [videoPausado, setVideoPausado] = useState(false);
+  const [volumenVideo, setVolumenVideo] = useState(0.5);
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -59,7 +66,7 @@ function App() {
   useEffect(() => {
     const audio = audioRef.current;
     
-    if (paginaActual === 'juego') {
+    if (paginaActual === 'juego' || paginaActual === 'sorpresa') {
       audio.pause();
       setMusicaReproduciendo(false);
     } 
@@ -74,7 +81,7 @@ function App() {
   useEffect(() => {
     if (paginaActual !== 'sorpresa') return; 
 
-    const fechaObjetivo = new Date("September 11, 2027 00:00:00").getTime();
+    const fechaObjetivo = new Date("February 09, 2026 00:00:00").getTime();
 
     const intervalo = setInterval(() => {
       const ahora = new Date().getTime();
@@ -96,6 +103,35 @@ function App() {
     return () => clearInterval(intervalo); 
   }, [paginaActual]);
 
+  // --- NUEVO: LÓGICA DEL VIDEO ---
+  const comprobarCodigo = () => {
+    if (codigoInput === "91127") { // CAMBIA ESTE CÓDIGO POR EL QUE QUIERAS
+      setVideoActivado(true);
+      if (videoRef.current) {
+        videoRef.current.play();
+      }
+    } else {
+      alert("Código incorrecto");
+    }
+  };
+
+  const alternarPausaVideo = () => {
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setVideoPausado(false);
+    } else {
+      videoRef.current.pause();
+      setVideoPausado(true);
+    }
+  };
+
+  const cambiarVolumenVideo = (e) => {
+    const nuevoVolumen = e.target.value;
+    setVolumenVideo(nuevoVolumen);
+    videoRef.current.volume = nuevoVolumen;
+  };
+  // ---------------------------------------------
+
   const alternarMusica = () => {
     const audio = audioRef.current;
     if (musicaReproduciendo) {
@@ -106,7 +142,6 @@ function App() {
     setMusicaReproduciendo(!musicaReproduciendo);
   };
 
-  // --- LÓGICA BOTÓN ESPECIAL (5 SEGUNDOS) ---
   const iniciarTemporizador = () => {
     temporizadorRef.current = setTimeout(() => {
       audioEspecialRef.current.play().then(() => {
@@ -132,7 +167,7 @@ function App() {
     setLoading(false);
   }
 
-  // --- LÓGICA DE JUEGO ---
+  // --- LÓGICA DE JUEGO (SE MANTIENE IGUAL) ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
@@ -307,22 +342,63 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (ACTUALIZADO) --- */}
+      {/* --- VISTA SORPRESA (ACTUALIZADO CON VIDEO) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
-          <div className="cuenta-atras-box">
+          
+          {videoActivado && (
+            <video ref={videoRef} className="video-fondo" loop>
+              <source src="/final.mp4" type="video/mp4" />
+              Tu navegador no soporta videos.
+            </video>
+          )}
+
+          <div className={`contenedor-final ${videoActivado ? 'oculto' : ''}`}>
+            <h2>Sorpresa</h2>
             <p>Falta:</p>
             <div className="contador">{tiempoRestante}</div>
             <p>para tu sorpresa.</p>
+            
+            {/* Campo de código */}
+            <input 
+              type="password" 
+              placeholder="Código" 
+              className="input-codigo"
+              value={codigoInput}
+              onChange={e => setCodigoInput(e.target.value)}
+            />
+            <button onClick={comprobarCodigo} className="boton-enviar">
+              Activar
+            </button>
             
             <button onClick={() => setPaginaActual('menu')} className="menu-btn primary" style={{marginTop: '30px'}}>
               Volver al Menú
             </button>
           </div>
+
+          {/* --- CONTROLES DE VIDEO --- */}
+          {videoActivado && (
+            <div className="controles-video">
+              <button onClick={alternarPausaVideo} className="menu-btn primary">
+                {videoPausado ? "▶ Play" : "⏸ Pausa"}
+              </button>
+              <input 
+                type="range" 
+                min="0" max="1" step="0.1" 
+                value={volumenVideo} 
+                onChange={cambiarVolumenVideo}
+              />
+              <button onClick={() => {
+                setVideoActivado(false);
+                setPaginaActual('menu');
+              }} className="menu-btn tertiary">Volver al Menú</button>
+            </div>
+          )}
         </div>
       )}
       {/* ------------------------------ */}
 
+      {/* ... [Resto de vistas igual] ... */}
       {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">

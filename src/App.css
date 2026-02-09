@@ -325,3 +325,61 @@ body {
   margin: 20px 0;
   display: block;
 }
+
+/* --- ESTILOS PARA SORPRESA FINAL (VIDEO) --- */
+.input-codigo {
+  padding: 10px;
+  font-size: 1.2rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 200px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.boton-enviar {
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  margin-left: 10px;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.video-fondo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1; /* Detrás de todo */
+}
+
+/* Contenedor para que el input no tape el video */
+.contenedor-final {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* Oscurecer un poco para leer el texto */
+}
+
+/* Controles de video */
+.controles-video {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  padding: 10px;
+  border-radius: 10px;
+  z-index: 100;
+  display: flex;
+  gap: 10px;
+}
