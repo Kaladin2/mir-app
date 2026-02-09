@@ -41,7 +41,7 @@ function App() {
   // --- NUEVO: Estado para el código y el video ---
   const [codigoInput, setCodigoInput] = useState("");
   const [videoActivado, setVideoActivado] = useState(false);
-  // --- DEFINE AQUÍ LA URL DE TU VIDEO ---
+  // --- URL DE TU VIDEO ---
   const urlVideo = "https://www.youtube.com/watch?v=1goAp0XmhZQ"; 
   const [videoPausado, setVideoPausado] = useState(false);
   const [volumenVideo, setVolumenVideo] = useState(0.5);
@@ -106,7 +106,7 @@ function App() {
     return () => clearInterval(intervalo); 
   }, [paginaActual]);
 
-  // --- LÓGICA DEL VIDEO (ACTUALIZADO) ---
+  // --- LÓGICA DEL VIDEO ---
   const comprobarCodigo = () => {
     if (codigoInput === "91127") { // CÓDIGO CORRECTO
       setVideoActivado(true);
@@ -339,7 +339,7 @@ function App() {
         <div className="app-container menu-fondo">
           
           {/* Reproductor de YouTube - Siempre presente pero oculto si no está activado */}
-          <div className="reproductor-youtube-wrapper">
+          <div className={`reproductor-youtube-wrapper ${videoActivado ? '' : 'oculto'}`}>
             <ReactPlayer 
               url={urlVideo}
               width='100%'
@@ -347,6 +347,16 @@ function App() {
               playing={videoActivado && !videoPausado}
               volume={volumenVideo}
               muted={false}
+              controls={false}
+              config={{
+                youtube: {
+                  playerVars: { 
+                    autoplay: 1, 
+                    controls: 0,
+                    modestbranding: 1 
+                  }
+                }
+              }}
               style={{ position: 'absolute', top: 0, left: 0 }}
             />
           </div>
@@ -374,7 +384,7 @@ function App() {
             </button>
           </div>
 
-          {/* --- CONTROLES DE VIDEO -  --- */}
+          {/* --- CONTROLES DE VIDEO - SOLO SI videoActivado ES TRUE --- */}
           {videoActivado && (
             <div className="controles-video">
               <button onClick={alternarPausaVideo} className="menu-btn primary">
