@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
+import ReactPlayer from 'react-player' // --- NUEVO: Importar ReactPlayer
 import './App.css'
 
 function App() {
@@ -7,7 +8,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [paginaActual, setPaginaActual] = useState('menu'); 
 
-  // --- ESTADO DEL JUEGO ---
+  // --- ESTADO DEL JUEGO (SE MANTIENE IGUAL) ---
   const [preguntasJuego, setPreguntasJuego] = useState([]);
   const [preguntaActualIndex, setPreguntaActualIndex] = useState(0);
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
@@ -16,12 +17,12 @@ function App() {
   const [modoJuego, setModoJuego] = useState('practica'); 
   const [examenFinalizado, setExamenFinalizado] = useState(false);
 
-  // --- CONTADORES ---
+  // --- CONTADORES (SE MANTIENE IGUAL) ---
   const [correctas, setCorrectas] = useState(0);
   const [incorrectas, setIncorrectas] = useState(0);
   const [enBlanco, setEnBlanco] = useState(0);
 
-  // --- ESTADOS FORMULARIO ADMINISTRADOR ---
+  // --- ESTADOS FORMULARIO ADMINISTRADOR (SE MANTIENE IGUAL) ---
   const [nuevaPregunta, setNuevaPregunta] = useState("");
   const [opcionesForm, setOpcionesForm] = useState(["", "", "", ""]);
   const [respuestaCorrectaInput, setRespuestaCorrectaInput] = useState(1);
@@ -30,7 +31,7 @@ function App() {
   const [añoInput, setAñoInput] = useState("");
   const [numeroPreguntaInput, setNumeroPreguntaInput] = useState("");
 
-  // --- ESTADO Y REFERENCIAS DE AUDIO/VIDEO ---
+  // --- ESTADO Y REFERENCIAS DE AUDIO ---
   const [musicaReproduciendo, setMusicaReproduciendo] = useState(false);
   const audioRef = useRef(new Audio('/musica.mp3')); 
   const audioEspecialRef = useRef(new Audio('/redstag.wav'));
@@ -40,7 +41,8 @@ function App() {
   // --- NUEVO: Estado para el código y el video ---
   const [codigoInput, setCodigoInput] = useState("");
   const [videoActivado, setVideoActivado] = useState(false);
-  const videoRef = useRef(null);
+  // URL de tu video de Youtube
+  const urlVideo = "https://www.youtube.com/watch?v=hswqVIDA_Kc"; 
   const [videoPausado, setVideoPausado] = useState(false);
   const [volumenVideo, setVolumenVideo] = useState(0.5);
 
@@ -81,7 +83,7 @@ function App() {
   useEffect(() => {
     if (paginaActual !== 'sorpresa') return; 
 
-    const fechaObjetivo = new Date("February 09, 2026 00:00:00").getTime();
+    const fechaObjetivo = new Date("September 11, 2027 00:00:00").getTime();
 
     const intervalo = setInterval(() => {
       const ahora = new Date().getTime();
@@ -103,32 +105,21 @@ function App() {
     return () => clearInterval(intervalo); 
   }, [paginaActual]);
 
-  // --- NUEVO: LÓGICA DEL VIDEO ---
+  // --- NUEVO: LÓGICA DEL VIDEO (ACTUALIZADO PARA YOUTUBE) ---
   const comprobarCodigo = () => {
-    if (codigoInput === "91127") { // CAMBIA ESTE CÓDIGO POR EL QUE QUIERAS
+    if (codigoInput === "91127") { // TU CÓDIGO
       setVideoActivado(true);
-      if (videoRef.current) {
-        videoRef.current.play();
-      }
     } else {
       alert("Código incorrecto");
     }
   };
 
   const alternarPausaVideo = () => {
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-      setVideoPausado(false);
-    } else {
-      videoRef.current.pause();
-      setVideoPausado(true);
-    }
+    setVideoPausado(!videoPausado);
   };
 
   const cambiarVolumenVideo = (e) => {
-    const nuevoVolumen = e.target.value;
-    setVolumenVideo(nuevoVolumen);
-    videoRef.current.volume = nuevoVolumen;
+    setVolumenVideo(parseFloat(e.target.value));
   };
   // ---------------------------------------------
 
@@ -342,15 +333,23 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (ACTUALIZADO CON VIDEO) --- */}
+      {/* --- VISTA SORPRESA (ACTUALIZADO CON REACTPLAYER) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
           
+          {/* NUEVO: Reproductor de YouTube */}
           {videoActivado && (
-            <video ref={videoRef} className="video-fondo" loop>
-              <source src="/final.mp4" type="video/mp4" />
-              Tu navegador no soporta videos.
-            </video>
+            <div className="reproductor-youtube-wrapper">
+              <ReactPlayer 
+                url={urlVideo}
+                width='100%'
+                height='100%'
+                playing={!videoPausado}
+                volume={volumenVideo}
+                muted={false}
+                style={{ position: 'absolute', top: 0, left: 0 }}
+              />
+            </div>
           )}
 
           <div className={`contenedor-final ${videoActivado ? 'oculto' : ''}`}>
@@ -359,7 +358,6 @@ function App() {
             <div className="contador">{tiempoRestante}</div>
             <p>para tu sorpresa.</p>
             
-            {/* Campo de código */}
             <input 
               type="password" 
               placeholder="Código" 
@@ -398,7 +396,7 @@ function App() {
       )}
       {/* ------------------------------ */}
 
-      {/* ... [Resto de vistas igual] ... */}
+      {/* ... [Resto de vistas igual: modo, modo-tipo, temas, juego, administrar] ... */}
       {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">
