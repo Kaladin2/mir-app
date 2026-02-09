@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
-import ReactPlayer from 'react-player'
+import ReactPlayer from 'react-player' 
 import './App.css'
 
 function App() {
@@ -38,15 +38,14 @@ function App() {
   const temporizadorRef = useRef(null);
   const [tiempoRestante, setTiempoRestante] = useState(""); 
   
-  // --- ESTADO PARA EL CÓDIGO Y EL VIDEO ---
+  // --- NUEVO: Estado para el código y el video ---
   const [codigoInput, setCodigoInput] = useState("");
   const [videoActivado, setVideoActivado] = useState(false);
-  // --- URL DE TU VIDEO ---
+  // --- DEFINE AQUÍ LA URL DE TU VIDEO ---
   const urlVideo = "https://www.youtube.com/watch?v=1goAp0XmhZQ"; 
   const [videoPausado, setVideoPausado] = useState(false);
   const [volumenVideo, setVolumenVideo] = useState(0.5);
-  // --- NUEVO ESTADO PARA SONIDO ---
-  const [videoMutado, setVideoMutado] = useState(true);
+  const [videoMutado, setVideoMutado] = useState(true); // --- IMPORTANTE PARA AUTOPLAY ---
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -108,11 +107,11 @@ function App() {
     return () => clearInterval(intervalo); 
   }, [paginaActual]);
 
-  // --- LÓGICA DEL VIDEO ---
+  // --- LÓGICA DEL VIDEO (ACTUALIZADO) ---
   const comprobarCodigo = () => {
     if (codigoInput === "91127") { // CÓDIGO CORRECTO
       setVideoActivado(true);
-      setVideoMutado(true); // --- IMPORTANTE: COMENZAR MUTADO ---
+      setVideoMutado(true); // Siempre iniciar mutado para permitir autoplay
     } else {
       alert("Código incorrecto");
     }
@@ -339,11 +338,11 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (CORREGIDO PARA AUTOPLAY) --- */}
+      {/* --- VISTA SORPRESA (ACTUALIZADO) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
           
-          {/* Contenedor del reproductor - SE MUESTRA SIEMPRE PARA CARGAR */}
+          {/* Reproductor de YouTube - Ocupa toda la pantalla */}
           <div className={`reproductor-youtube-wrapper ${videoActivado ? '' : 'oculto'}`}>
             <ReactPlayer 
               url={urlVideo}
@@ -359,17 +358,16 @@ function App() {
                     autoplay: 1, 
                     controls: 0,
                     modestbranding: 1,
-                    // youtube player policy
                     disablekb: 1,
-                    fs: 0
+                    fs: 0,
+                    rel: 0
                   }
                 }
               }}
-              style={{ position: 'absolute', top: 0, left: 0 }}
             />
           </div>
 
-          {/* Formulario de código - Se oculta al activar el video */}
+          {/* Formulario de código - Flotando sobre el video */}
           <div className={`contenedor-final ${videoActivado ? 'oculto' : ''}`}>
             <h2>Sorpresa</h2>
             <p>Falta:</p>
