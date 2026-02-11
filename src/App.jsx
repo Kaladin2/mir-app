@@ -428,17 +428,16 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA ACTUALIZADA --- */}
+      {/* --- VISTA SORPRESA ACTUALIZADA (Sin fechas) --- */}
       {paginaActual === 'sorpresa' && (
         <div className={`app-container ${mostrarVideoFondo ? 'sin-fondo' : 'menu-fondo'}`}>
           <div className={`contenedor-final ${mostrarVideoFondo ? 'transparente' : ''}`}>
             <h2>Sorpresa</h2>
             
-            {/* --- LISTA DE CUENTAS ATRÁS --- */}
+            {/* --- LISTA DE CUENTAS ATRÁS (Solo números) --- */}
             <div className="lista-cuentas">
                 {/* Cuenta 1 */}
                 <div className="fila-cuenta">
-                    <span>30 Ago 2026: </span>
                     {checks.check1 ? <strong>CUMPLIDO</strong> : 
                      !checks.check1 && !checks.check2 && !checks.check3 ? <span>{tiempos.ct1}</span> : <span>*************</span>
                     }
@@ -446,7 +445,6 @@ function App() {
                 
                 {/* Cuenta 2 */}
                 <div className="fila-cuenta">
-                    <span>30 Ago 2027: </span>
                     {checks.check2 ? <strong>CUMPLIDO</strong> :
                      checks.check1 && !checks.check2 ? <span>{tiempos.ct2}</span> : <span>*************</span>
                     }
@@ -454,7 +452,6 @@ function App() {
 
                 {/* Cuenta 3 */}
                 <div className="fila-cuenta">
-                    <span>11 Sep 2027: </span>
                     {checks.check3 ? <strong>CUMPLIDO</strong> :
                      checks.check2 && !checks.check3 ? <span>{tiempos.ct3}</span> : <span>*************</span>
                     }
@@ -511,7 +508,7 @@ function App() {
       )}
       {/* ------------------------------ */}
 
-      {/* ... [Resto de vistas igual: modo, temas, juego, administrar] ... */}
+      {/* ... [Resto de vistas igual] ... */}
        {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">
@@ -532,7 +529,7 @@ function App() {
                   <div className="menu-botones">
                       <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
-                      <button onClick={() => setPaginaStart('modo')} className="boton-volver">Volver</button>
+                      <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
               </div>
           </div>
@@ -614,7 +611,7 @@ function App() {
               {(comprobado || examenFinalizado) && preguntasJuego[preguntaActualIndex]?.explicacion && (
                   <div className="area-explicacion">
                       <h4>Explicación:</h4>
-                      <p>{preguntasJuego[preguntaActualIndex]?.explicacion}</p>
+                      <p>{preguntasJuego[preccionActualIndex]?.explicacion}</p>
                   </div>
               )}
               <div className="footer-pregunta">
