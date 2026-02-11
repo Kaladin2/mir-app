@@ -77,7 +77,7 @@ function App() {
     audio.loop = true;
     audio.volume = 0.3;
 
-    // Configurar audio bucle local - VOLUMEN A LA MITAD (0.5)
+    // Configurar audio bucle local
     audioBucleRef.current.loop = true;
     audioBucleRef.current.volume = 0.5;
   }, []);
@@ -101,7 +101,7 @@ function App() {
   useEffect(() => {
     if (paginaActual !== 'sorpresa') return; 
 
-    // --- FECHAS OBJETIVO (Ajusta estas fechas) ---
+    // --- FECHAS OBJETIVO ---
     const f1 = new Date("August 30, 2026 00:00:00").getTime();
     const f2 = new Date("August 30, 2027 00:00:00").getTime();
     const f3 = new Date("September 11, 2027 00:00:00").getTime();
@@ -113,39 +113,51 @@ function App() {
       const dist2 = f2 - ahora;
       const dist3 = f3 - ahora;
 
-      // Actualizar tiempos en pantalla
-      setTiempos({
-        ct1: dist1 > 0 ? formatearDistancia(dist1) : "¡LLEGÓ EL DÍA!",
-        ct2: dist2 > 0 ? formatearDistancia(dist2) : "¡LLEGÓ EL DÍA!",
-        ct3: dist3 > 0 ? formatearDistancia(dist3) : "¡LLEGÓ EL DÍA!"
-      });
+      // Actualizar tiempos en pantalla solo si no se ha saltado la fase
+      if (!fases.fase1) {
+        setTiempos(prev => ({...prev, ct1: dist1 > 0 ? formatearDistancia(dist1) : "¡LLEGÓ EL DÍA!"}));
+      }
+      if (!fases.fase2) {
+        setTiempos(prev => ({...prev, ct2: dist2 > 0 ? formatearDistancia(dist2) : "¡LLEGÓ EL DÍA!"}));
+      }
+      if (!fases.fase3) {
+        setTiempos(prev => ({...prev, ct3: dist3 > 0 ? formatearDistancia(dist3) : "¡LLEGÓ EL DÍA!"}));
+      }
 
       // --- ACCIONES SECUENCIALES AUTOMÁTICAS ---
-
-      // 1. Termina cuenta 1 -> Suena audio bucle
       if (dist1 <= 0 && !fases.fase1) {
-        setFases(prev => ({...prev, fase1: true}));
-        audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
+        activarFase1();
       }
-      
-      // 2. Termina cuenta 2 -> Se activa VIDEO DE FONDO
       if (dist2 <= 0 && fases.fase1 && !fases.fase2) {
-        setFases(prev => ({...prev, fase2: true}));
-        audioBucleRef.current.pause(); 
-        setMostrarVideoFondo(true); // Activa el video de fondo
+        activarFase2();
       }
-      
-      // 3. Termina cuenta 3 -> Se habilita CÓDIGO FINAL
       if (dist3 <= 0 && fases.fase2 && !fases.fase3) {
-        setFases(prev => ({...prev, fase3: true}));
-        // Opcional: ocultar video de fondo al terminar
-        // setMostrarVideoFondo(false);
+        activarFase3();
       }
 
     }, 1000);
 
     return () => clearInterval(intervalo); 
   }, [paginaActual, fases]);
+
+  const activarFase1 = () => {
+    setFases(prev => ({...prev, fase1: true}));
+    setTiempos(prev => ({...prev, ct1: "CUMPLIDO"}));
+    audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
+  };
+
+  const activarFase2 = () => {
+    setFases(prev => ({...prev, fase2: true}));
+    setTiempos(prev => ({...prev, ct2: "CUMPLIDO"}));
+    audioBucleRef.current.pause(); 
+    setMostrarVideoFondo(true);
+  };
+
+  const activarFase3 = () => {
+    setFases(prev => ({...prev, fase3: true}));
+    setTiempos(prev => ({...prev, ct3: "CUMPLIDO"}));
+    // setMostrarVideoFondo(false); // Opcional
+  };
 
   const formatearDistancia = (distancia) => {
     const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
@@ -158,7 +170,7 @@ function App() {
   // --- LÓGICA DEL CÓDIGO (CONTROLADOR DE FASES) ---
   const comprobarCodigo = () => {
     
-    // 1. REINICIAR: Vuelve a la fase inicial y limpia todo
+    // 1. REINICIAR: Vuelve a la fase inicial
     if (codigoInput === "reiniciar") {
         setFases({ fase1: false, fase2: false, fase3: false });
         audioBucleRef.current.pause();
@@ -166,11 +178,28 @@ function App() {
         setMostrarVideoFondo(false);
         setCodigoCorrecto(false);
         setCodigoInput("");
+        setTiempos({ct1: "", ct2: "", ct3: ""});
         alert("Sistema reiniciado.");
         return;
     }
 
-    // 2. CÓDIGO FINAL "maridoymujer"
+    // 2. CODIGO DE SALTO "sombrasdeidentidad"
+    if (codigoInput === "sombrasdeidentidad") {
+      if (!fases.fase1) {
+        activarFase1();
+        alert("Fase 1 activada.");
+      } else if (!fases.fase2) {
+        activarFase2();
+        alert("Fase 2 activada.");
+      } else if (!fases.fase3) {
+        activarFase3();
+        alert("Fase 3 activada.");
+      }
+      setCodigoInput("");
+      return;
+    }
+
+    // 3. CÓDIGO FINAL "maridoymujer"
     if (codigoInput === "maridoymujer") {
         if (fases.fase3) {
             setCodigoCorrecto(true);
@@ -182,7 +211,7 @@ function App() {
         return;
     }
     
-    // 3. CÓDIGO ADM (Opcional si necesitas otro)
+    // 4. CÓDIGO ADM (Opcional)
     if (codigoInput === "91127") {
         alert("Modo Admin activado (simulado)");
     } else {
@@ -376,7 +405,7 @@ function App() {
         </button>
       )}
 
-      {/* --- VIDEO DE FONDO (REPRODUCIENDO) --- */}
+      {/* --- VIDEO DE FONDO --- */}
       {mostrarVideoFondo && (
           <video autoPlay loop muted className="video-fondo">
               <source src="/bucle_video.mp4" type="video/mp4" />
@@ -422,25 +451,14 @@ function App() {
             
             {/* --- LISTA DE CUENTAS ATRÁS (Solo números) --- */}
             <div className="lista-cuentas">
-                {/* Cuenta 1 */}
                 <div className="fila-cuenta">
-                    {fases.fase1 ? <strong>CUMPLIDO</strong> : 
-                     !fases.fase1 && !fases.fase2 && !fases.fase3 ? <span>{tiempos.ct1}</span> : <span>*************</span>
-                    }
+                    {fases.fase1 ? <strong>CUMPLIDO</strong> : <span>{tiempos.ct1}</span>}
                 </div>
-                
-                {/* Cuenta 2 */}
                 <div className="fila-cuenta">
-                    {fases.fase2 ? <strong>CUMPLIDO</strong> :
-                     fases.fase1 && !fases.fase2 ? <span>{tiempos.ct2}</span> : <span>*************</span>
-                    }
+                    {fases.fase2 ? <strong>CUMPLIDO</strong> : <span>{tiempos.ct2}</span>}
                 </div>
-
-                {/* Cuenta 3 */}
                 <div className="fila-cuenta">
-                    {fases.fase3 ? <strong>CUMPLIDO</strong> :
-                     fases.fase2 && !fases.fase3 ? <span>{tiempos.ct3}</span> : <span>*************</span>
-                    }
+                    {fases.fase3 ? <strong>CUMPLIDO</strong> : <span>{tiempos.ct3}</span>}
                 </div>
             </div>
             {/* ------------------------------- */}
@@ -467,10 +485,26 @@ function App() {
                 )
             )}
             
+            {/* --- ZONA INFERIOR: PRUEBA DE CÓDIGOS --- */}
+            <div style={{marginTop: '40px', borderTop: '1px solid #444', paddingTop: '20px'}}>
+                <input 
+                    type="text" 
+                    placeholder="Código de prueba..." 
+                    className="input-codigo"
+                    value={codigoInput}
+                    onChange={e => setCodigoInput(e.target.value)}
+                    style={{width: '150px', fontSize: '0.9rem'}}
+                />
+                <button onClick={comprobarCodigo} className="boton-enviar" style={{fontSize: '0.9rem', padding: '10px 15px'}}>
+                    Probar
+                </button>
+            </div>
+            {/* -------------------------------------- */}
+
             <button onClick={() => {
               setCodigoCorrecto(false);
               setPaginaActual('menu');
-            }} className="menu-btn tertiary" style={{marginTop: '30px'}}>
+            }} className="menu-btn tertiary" style={{marginTop: '20px'}}>
               Volver al Menú
             </button>
           </div>
@@ -499,7 +533,7 @@ function App() {
                   <div className="menu-botones">
                       <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
-                      <button onClick={() => setPaginaStart('modo')} className="boton-volver">Volver</button>
+                      <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
               </div>
           </div>
