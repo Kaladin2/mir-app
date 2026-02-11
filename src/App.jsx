@@ -113,11 +113,11 @@ function App() {
       const dist2 = f2 - ahora;
       const dist3 = f3 - ahora;
 
-      // Actualizar tiempos en pantalla
+      // Actualizar tiempos en pantalla (SOLO NÚMEROS)
       setTiempos({
-        ct1: dist1 > 0 ? formatearDistancia(dist1) : "¡LLEGÓ EL DÍA!",
-        ct2: dist2 > 0 ? formatearDistancia(dist2) : "¡LLEGÓ EL DÍA!",
-        ct3: dist3 > 0 ? formatearDistancia(dist3) : "¡LLEGÓ EL DÍA!"
+        ct1: dist1 > 0 ? formatearDistancia(dist1) : "0d : 0h : 0m : 0s",
+        ct2: dist2 > 0 ? formatearDistancia(dist2) : "0d : 0h : 0m : 0s",
+        ct3: dist3 > 0 ? formatearDistancia(dist3) : "0d : 0h : 0m : 0s"
       });
 
       // --- ACCIONES SECUENCIALES AUTOMÁTICAS ---
@@ -428,21 +428,18 @@ function App() {
           <div className={`contenedor-final ${mostrarVideoFondo ? 'transparente' : ''}`}>
             <h2>Sorpresa</h2>
             
-            {/* --- LISTA DE CUENTAS ATRÁS --- */}
+            {/* --- LISTA DE CUENTAS ATRÁS (SOLO TIEMPO) --- */}
             <div className="lista-cuentas">
                 <div className="fila-cuenta">
-                    <span>30 Ago 2026: </span>
-                    {checks.check1 ? <strong>CUMPLIDO</strong> : <span>{tiempos.ct1}</span>}
+                    {checks.check1 ? <strong>Fase 1: CUMPLIDO</strong> : <span>{tiempos.ct1}</span>}
                 </div>
                 <div className="fila-cuenta">
-                    <span>30 Ago 2027: </span>
-                    {checks.check2 ? <strong>CUMPLIDO</strong> : 
+                    {checks.check2 ? <strong>Fase 2: CUMPLIDO</strong> : 
                      checks.check1 ? <span>{tiempos.ct2}</span> : <span>*************</span>
                     }
                 </div>
                 <div className="fila-cuenta">
-                    <span>11 Sep 2027: </span>
-                    {checks.check3 ? <strong>CUMPLIDO</strong> : 
+                    {checks.check3 ? <strong>Fase 3: CUMPLIDO</strong> : 
                      checks.check2 ? <span>{tiempos.ct3}</span> : <span>*************</span>
                     }
                 </div>
