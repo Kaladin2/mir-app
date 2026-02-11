@@ -134,9 +134,7 @@ function App() {
       
       if (dist3 <= 0 && checks.check2 && !checks.check3) {
         setChecks(prev => ({...prev, check3: true}));
-        // Al llegar a fase 3, mostramos el video final en lugar del bucle
-        setMostrarVideoFondo(false);
-        abrirVideoEnlace(); 
+        setMostrarVideoFondo(false); // Quita el video de bucle
       }
 
     }, 1000);
@@ -152,11 +150,11 @@ function App() {
     return `${dias}d : ${horas}h : ${minutos}m : ${segundos}s`;
   }
 
-  // --- LÓGICA DEL CÓDIGO (CONTROLADOR DE FASES) ---
+  // --- LÓGICA DEL CÓDIGO (CONTROLADOR DE FASES Y FINAL) ---
   const comprobarCodigo = () => {
     
-    // 1. REINICIAR
-    if (codigoInput === "reiniciar") {
+    // 1. REINICIAR: El código "reiniciar" limpia todo
+    if (codigoInput.toLowerCase() === "reiniciar") {
         setChecks({ check1: false, check2: false, check3: false });
         audioBucleRef.current.pause();
         audioBucleRef.current.currentTime = 0;
@@ -167,8 +165,8 @@ function App() {
         return;
     }
 
-    // 2. AVANZAR FASE
-    if (codigoInput === "sombrasdeidentidad") {
+    // 2. AVANZAR FASE: Administrador
+    if (codigoInput.toLowerCase() === "sombrasdeidentidad") {
       if (!checks.check1) {
           setChecks(prev => ({...prev, check1: true}));
           audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
@@ -181,17 +179,17 @@ function App() {
       } else if (checks.check2 && !checks.check3) {
           setChecks(prev => ({...prev, check3: true}));
           setMostrarVideoFondo(false);
-          abrirVideoEnlace();
           alert("Fase 3 activada.");
       }
       setCodigoInput("");
       return;
     }
     
-    // 3. CÓDIGO PRODUCCIÓN
-    if (codigoInput === "91127") {
+    // 3. CÓDIGO FINAL (maridoymujer)
+    if (codigoInput.toLowerCase() === "maridoymujer") {
         if (checks.check3) {
             setCodigoCorrecto(true);
+            abrirVideoEnlace();
         } else {
             alert("Aún no es el momento.");
         }
@@ -430,17 +428,20 @@ function App() {
           <div className={`contenedor-final ${mostrarVideoFondo ? 'transparente' : ''}`}>
             <h2>Sorpresa</h2>
             
-            {/* --- LISTA DE CUENTAS ATRÁS (Corregida visibilidad) --- */}
+            {/* --- LISTA DE CUENTAS ATRÁS --- */}
             <div className="lista-cuentas">
                 <div className="fila-cuenta">
+                    <span>30 Ago 2026: </span>
                     {checks.check1 ? <strong>CUMPLIDO</strong> : <span>{tiempos.ct1}</span>}
                 </div>
                 <div className="fila-cuenta">
+                    <span>30 Ago 2027: </span>
                     {checks.check2 ? <strong>CUMPLIDO</strong> : 
                      checks.check1 ? <span>{tiempos.ct2}</span> : <span>*************</span>
                     }
                 </div>
                 <div className="fila-cuenta">
+                    <span>11 Sep 2027: </span>
                     {checks.check3 ? <strong>CUMPLIDO</strong> : 
                      checks.check2 ? <span>{tiempos.ct3}</span> : <span>*************</span>
                     }
@@ -448,10 +449,9 @@ function App() {
             </div>
             {/* ------------------------------- */}
 
-            {/* Código de activación final */}
-            {checks.check3 && (
-                !codigoCorrecto ? (
-                <>
+            {/* CÓDIGO DE ACTIVACIÓN FINAL */}
+            {checks.check3 && !codigoCorrecto && (
+                <div style={{marginTop: '20px'}}>
                     <input 
                     type="password" 
                     placeholder="Código final" 
@@ -462,21 +462,17 @@ function App() {
                     <button onClick={comprobarCodigo} className="boton-enviar">
                     Activar
                     </button>
-                </>
-                ) : (
-                <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
-                    Ver Video Final
-                </button>
-                )
+                </div>
             )}
             
             {/* CAMPO PARA CÓDIGOS DE ADMINISTRACIÓN */}
-            {!(checks.check3 && codigoCorrecto) && (
-                <div style={{marginTop: '20px'}}>
+            {!codigoCorrecto && (
+                <div style={{marginTop: '20px', borderTop: '1px solid #444', paddingTop: '10px'}}>
                     <input 
                     type="text" 
-                    placeholder="Código de administración" 
+                    placeholder="Administrador (sombras/reiniciar)" 
                     className="input-codigo"
+                    style={{backgroundColor: '#222', color: '#fff'}}
                     value={codigoInput}
                     onChange={e => setCodigoInput(e.target.value)}
                     />
