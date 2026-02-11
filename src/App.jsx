@@ -77,12 +77,12 @@ function App() {
     audio.loop = true;
     audio.volume = 0.3;
 
-    // Configurar audio bucle local
+    // Configurar audio bucle local - VOLUMEN A LA MITAD (0.5)
     audioBucleRef.current.loop = true;
     audioBucleRef.current.volume = 0.5;
   }, []);
 
-  // --- LÓGICA DE MÚSICA ---
+  // --- LÓGICA DE MÚSICA (PAUSA AUTOMÁTICA EN JUEGO) ---
   useEffect(() => {
     const audio = audioRef.current;
     
@@ -113,28 +113,34 @@ function App() {
       const dist2 = f2 - ahora;
       const dist3 = f3 - ahora;
 
-      // Actualizar tiempos en pantalla (SOLO NÚMEROS)
+      // Actualizar tiempos en pantalla
       setTiempos({
-        ct1: dist1 > 0 ? formatearDistancia(dist1) : "0d : 0h : 0m : 0s",
-        ct2: dist2 > 0 ? formatearDistancia(dist2) : "0d : 0h : 0m : 0s",
-        ct3: dist3 > 0 ? formatearDistancia(dist3) : "0d : 0h : 0m : 0s"
+        ct1: dist1 > 0 ? formatearDistancia(dist1) : "¡LLEGÓ EL DÍA!",
+        ct2: dist2 > 0 ? formatearDistancia(dist2) : "¡LLEGÓ EL DÍA!",
+        ct3: dist3 > 0 ? formatearDistancia(dist3) : "¡LLEGÓ EL DÍA!"
       });
 
       // --- ACCIONES SECUENCIALES AUTOMÁTICAS ---
+
+      // 1. Termina cuenta 1 -> Suena audio bucle
       if (dist1 <= 0 && !checks.check1) {
         setChecks(prev => ({...prev, check1: true}));
         audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
       }
       
+      // 2. Termina cuenta 2 -> Se activa VIDEO DE FONDO
       if (dist2 <= 0 && checks.check1 && !checks.check2) {
         setChecks(prev => ({...prev, check2: true}));
         audioBucleRef.current.pause(); 
         setMostrarVideoFondo(true); // Activa el video de fondo
       }
       
+      // 3. Termina cuenta 3 -> Se abre video final
       if (dist3 <= 0 && checks.check2 && !checks.check3) {
         setChecks(prev => ({...prev, check3: true}));
-        setMostrarVideoFondo(false); // Quita el video de bucle
+        // Opcional: ocultar video de fondo para mostrar el enlace final
+        setMostrarVideoFondo(false);
+        abrirVideoEnlace(); // Abre youtube
       }
 
     }, 1000);
@@ -150,11 +156,11 @@ function App() {
     return `${dias}d : ${horas}h : ${minutos}m : ${segundos}s`;
   }
 
-  // --- LÓGICA DEL CÓDIGO (CONTROLADOR DE FASES Y FINAL) ---
+  // --- LÓGICA DEL CÓDIGO (CONTROLADOR DE FASES) ---
   const comprobarCodigo = () => {
     
-    // 1. REINICIAR: El código "reiniciar" limpia todo
-    if (codigoInput.toLowerCase() === "reiniciar") {
+    // 1. REINICIAR: Vuelve a la fase inicial y limpia todo
+    if (codigoInput === "reiniciar") {
         setChecks({ check1: false, check2: false, check3: false });
         audioBucleRef.current.pause();
         audioBucleRef.current.currentTime = 0;
@@ -165,8 +171,8 @@ function App() {
         return;
     }
 
-    // 2. AVANZAR FASE: Administrador
-    if (codigoInput.toLowerCase() === "sombrasdeidentidad") {
+    // 2. AVANZAR FASE
+    if (codigoInput === "sombrasdeidentidad") {
       if (!checks.check1) {
           setChecks(prev => ({...prev, check1: true}));
           audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
@@ -179,17 +185,17 @@ function App() {
       } else if (checks.check2 && !checks.check3) {
           setChecks(prev => ({...prev, check3: true}));
           setMostrarVideoFondo(false);
+          abrirVideoEnlace();
           alert("Fase 3 activada.");
       }
       setCodigoInput("");
       return;
     }
     
-    // 3. CÓDIGO FINAL (maridoymujer)
-    if (codigoInput.toLowerCase() === "maridoymujer") {
+    // 3. CÓDIGO PRODUCCIÓN
+    if (codigoInput === "91127") {
         if (checks.check3) {
             setCodigoCorrecto(true);
-            abrirVideoEnlace();
         } else {
             alert("Aún no es el momento.");
         }
@@ -239,7 +245,7 @@ function App() {
     setLoading(false);
   }
 
-  // --- LÓGICA DE JUEGO ---
+  // --- LÓGICA DE JUEGO (Igual) ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
@@ -386,13 +392,7 @@ function App() {
 
       {/* --- VIDEO DE FONDO --- */}
       {mostrarVideoFondo && (
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline /* CRUCIAL PARA LA REPRODUCCIÓN AUTOMÁTICA EN MÓVILES */
-            className="video-fondo"
-          >
+          <video autoPlay loop muted className="video-fondo">
               <source src="/bucle_video.mp4" type="video/mp4" />
           </video>
       )}
@@ -428,33 +428,41 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA ACTUALIZADA --- */}
+      {/* --- VISTA SORPRESA ACTUALIZADA (Sin fechas) --- */}
       {paginaActual === 'sorpresa' && (
         <div className={`app-container ${mostrarVideoFondo ? 'sin-fondo' : 'menu-fondo'}`}>
           <div className={`contenedor-final ${mostrarVideoFondo ? 'transparente' : ''}`}>
             <h2>Sorpresa</h2>
             
-            {/* --- LISTA DE CUENTAS ATRÁS (SOLO TIEMPO) --- */}
+            {/* --- LISTA DE CUENTAS ATRÁS (Solo números) --- */}
             <div className="lista-cuentas">
+                {/* Cuenta 1 */}
                 <div className="fila-cuenta">
-                    {checks.check1 ? <strong>Fase 1: CUMPLIDO</strong> : <span>{tiempos.ct1}</span>}
-                </div>
-                <div className="fila-cuenta">
-                    {checks.check2 ? <strong>Fase 2: CUMPLIDO</strong> : 
-                     checks.check1 ? <span>{tiempos.ct2}</span> : <span>*************</span>
+                    {checks.check1 ? <strong>CUMPLIDO</strong> : 
+                     !checks.check1 && !checks.check2 && !checks.check3 ? <span>{tiempos.ct1}</span> : <span>*************</span>
                     }
                 </div>
+                
+                {/* Cuenta 2 */}
                 <div className="fila-cuenta">
-                    {checks.check3 ? <strong>Fase 3: CUMPLIDO</strong> : 
-                     checks.check2 ? <span>{tiempos.ct3}</span> : <span>*************</span>
+                    {checks.check2 ? <strong>CUMPLIDO</strong> :
+                     checks.check1 && !checks.check2 ? <span>{tiempos.ct2}</span> : <span>*************</span>
+                    }
+                </div>
+
+                {/* Cuenta 3 */}
+                <div className="fila-cuenta">
+                    {checks.check3 ? <strong>CUMPLIDO</strong> :
+                     checks.check2 && !checks.check3 ? <span>{tiempos.ct3}</span> : <span>*************</span>
                     }
                 </div>
             </div>
             {/* ------------------------------- */}
 
-            {/* CÓDIGO DE ACTIVACIÓN FINAL */}
-            {checks.check3 && !codigoCorrecto && (
-                <div style={{marginTop: '20px'}}>
+            {/* Código de activación final tras las 3 cuentas */}
+            {checks.check3 && (
+                !codigoCorrecto ? (
+                <>
                     <input 
                     type="password" 
                     placeholder="Código final" 
@@ -465,17 +473,21 @@ function App() {
                     <button onClick={comprobarCodigo} className="boton-enviar">
                     Activar
                     </button>
-                </div>
+                </>
+                ) : (
+                <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
+                    Ver Video Final
+                </button>
+                )
             )}
             
             {/* CAMPO PARA CÓDIGOS DE ADMINISTRACIÓN */}
-            {!codigoCorrecto && (
-                <div style={{marginTop: '20px', borderTop: '1px solid #444', paddingTop: '10px'}}>
+            {!(checks.check3 && codigoCorrecto) && (
+                <div style={{marginTop: '20px'}}>
                     <input 
                     type="text" 
-                    placeholder="Administrador (sombras/reiniciar)" 
+                    placeholder="Código de administración" 
                     className="input-codigo"
-                    style={{backgroundColor: '#222', color: '#fff'}}
                     value={codigoInput}
                     onChange={e => setCodigoInput(e.target.value)}
                     />
@@ -496,8 +508,8 @@ function App() {
       )}
       {/* ------------------------------ */}
 
-      {/* ... [Resto de vistas igual: modo, temas, juego, administrar] ... */}
-      {paginaActual === 'modo' && (
+      {/* ... [Resto de vistas igual] ... */}
+       {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">
                   <h2>Selecciona el Modo</h2>
@@ -599,7 +611,7 @@ function App() {
               {(comprobado || examenFinalizado) && preguntasJuego[preguntaActualIndex]?.explicacion && (
                   <div className="area-explicacion">
                       <h4>Explicación:</h4>
-                      <p>{preguntasJuego[preguntaActualIndex]?.explicacion}</p>
+                      <p>{preguntasJuego[preccionActualIndex]?.explicacion}</p>
                   </div>
               )}
               <div className="footer-pregunta">
@@ -655,5 +667,4 @@ function App() {
     </>
   );
 }
-
 export default App;
