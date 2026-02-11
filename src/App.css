@@ -15,42 +15,12 @@ body {
   font-family: 'Segoe UI', Roboto, sans-serif;
   background-color: var(--background);
   color: var(--text);
-  overflow-x: hidden;
 }
 
 .app-container {
   display: flex;
   min-height: 100vh;
-  width: 100%;
 }
-
-/* --- ESTILOS DE VIDEO MEJORADOS (Fondo de pantalla) --- */
-.video-fondo {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1; /* Pone el video detrás de todo */
-  object-fit: cover; /* Hace que cubra toda la pantalla sin deformarse */
-  pointer-events: none; /* Evita que el video interfiera con clics */
-}
-
-/* Esta clase se aplicará al app-container cuando se activa el video */
-.app-container.sin-fondo {
-  background-color: transparent !important;
-}
-
-/* Ajustes para que el contenido se vea sobre el video */
-.contenedor-final.transparente {
-  background-color: rgba(0, 0, 0, 0.6) !important; /* Fondo semi-transparente para leer el texto */
-  color: white;
-  border-radius: 10px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 10;
-}
-/* ----------------------------------------------------- */
 
 /* Menu Principal */
 .menu-box {
@@ -285,11 +255,12 @@ body {
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border: 1px solid white;
-  border-radius: 50%;
+  border-radius: 0%; /* Botón circular */
   cursor: pointer;
   z-index: 1000;
-  width: 40px;
-  height: 40px;
+  font-size: 0.5rem; /* Tamaño del icono */
+  width: 25px;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -304,11 +275,11 @@ body {
 .contenedor-imagen-boton {
   display: flex;
   justify-content: center;
-  margin-bottom: 5px;
+  margin-bottom: 5px; /* Espacio con el título */
 }
 
 .imagen-boton-especial {
-  width: 80px;
+  width: 80px; /* Ajusta el tamaño de la imagen */
   height: auto;
   cursor: pointer;
   transition: transform 0.2s;
@@ -333,18 +304,29 @@ body {
   box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
+.cuenta-atras-box h2 {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #ddd;
+}
+
+.cuenta-atras-box p {
+  font-size: 1.5rem;
+  margin: 10px 0;
+}
+
 /* --- NUEVO ESTILO MEJORADO PARA EL CONTADOR --- */
 .contador {
-  font-size: 3.5rem;
-  font-family: 'Courier New', Courier, monospace;
+  font-size: 3.5rem; /* MÁS GRANDE */
+  font-family: 'Courier New', Courier, monospace; /* TIPO DIGITAL */
   font-weight: bold;
-  color: #00ff00;
-  text-shadow: 0 0 15px #00ff00;
+  color: #00ff00; /* COLOR VERDE */
+  text-shadow: 0 0 15px #00ff00; /* EFECTO BRILLO */
   margin: 20px 0;
   display: block;
 }
 
-/* --- ESTILOS PARA SORPRESA FINAL --- */
+/* --- ESTILOS PARA SORPRESA FINAL (YOUTUBE) --- */
 .input-codigo {
   padding: 10px;
   font-size: 1.2rem;
@@ -366,14 +348,15 @@ body {
   border-radius: 5px;
 }
 
-/* --- ESTILOS DE VIDEO MEJORADOS (YouTube/Contenedor) --- */
+/* --- ESTILOS DE VIDEO MEJORADOS --- */
+
 .reproductor-youtube-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1;
+  z-index: 1; /* Fondo total */
   background: black;
   display: flex;
   justify-content: center;
@@ -381,18 +364,47 @@ body {
 }
 
 .reproductor-youtube-wrapper.oculto {
-  display: none;
+  display: none; /* Si no está activado, no existe */
 }
 
+/* El formulario de código ahora flotará encima de TODO */
 .contenedor-final {
-  background: rgba(0, 0, 0, 0.85);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100; /* SUPERIOR al video */
+  width: 80%;
+  max-width: 500px;
+  /* FONDO MEJORADO */
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 40px;
   border-radius: 15px;
   text-align: center;
   color: white;
   transition: opacity 0.5s ease;
-  margin: auto;
-  max-width: 600px;
+}
+
+.contenedor-final.oculto {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Controles de video - Z-INDEX ALTO */
+.controles-video {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  padding: 15px;
+  border-radius: 10px;
+  z-index: 200; /* SUPERIOR a todo */
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 /* --- NUEVOS ESTILOS PARA LA LISTA DE CUENTAS (EN SORPRESA) --- */
@@ -404,9 +416,41 @@ body {
 .fila-cuenta {
   margin-bottom: 17px;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 2.5rem;
+  font-size: 2.5rem; /* MÁS GRANDE */
   font-weight: bold;
   letter-spacing: 2px;
-  color: #37cee2;
-  text-shadow: 0 0 11px #37cee2;
+  color: #37cee2; /* COLOR VERDE */
+  text-shadow: 0 0 11px #37cee2; /* EFECTO BRILLO */
+}
+
+/* Añade esto a tu App.css */
+.video-fondo {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+  z-index: -1;
+  object-fit: cover;
+}
+
+.app-container.sin-fondo {
+  background-color: transparent;
+}
+
+.contenedor-final.transparente {
+  background-color: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente para leer el texto */
+  color: white;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.lista-cuentas {
+  margin: 20px 0;
+  font-size: 1.2rem;
+  text-align: left;
+}
+
+.fila-cuenta {
+  margin-bottom: 10px;
 }
