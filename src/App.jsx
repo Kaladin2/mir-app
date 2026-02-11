@@ -386,7 +386,13 @@ function App() {
 
       {/* --- VIDEO DE FONDO --- */}
       {mostrarVideoFondo && (
-          <video autoPlay loop muted className="video-fondo">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline /* CRUCIAL PARA LA REPRODUCCIÓN AUTOMÁTICA EN MÓVILES */
+            className="video-fondo"
+          >
               <source src="/bucle_video.mp4" type="video/mp4" />
           </video>
       )}
@@ -649,4 +655,5 @@ function App() {
     </>
   );
 }
+
 export default App;
