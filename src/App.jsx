@@ -55,8 +55,10 @@ function App() {
   // --- ESTADO PARA EL CÓDIGO (PLAN B) ---
   const [codigoInput, setCodigoInput] = useState("");
   const [codigoCorrecto, setCodigoCorrecto] = useState(false);
-  // --- DEFINE AQUÍ LA URL DE TU VIDEO FINAL ---
-  const urlVideo = "https://www.youtube.com/watch?v=1goAp0XmhZQ"; 
+  
+  // --- NUEVO: ESTADO PARA EL VIDEO DE FONDO ---
+  const [mostrarVideoFondo, setMostrarVideoFondo] = useState(false);
+  // ---------------------------------------------
 
   const listaTemas = [
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
@@ -75,8 +77,9 @@ function App() {
     audio.loop = true;
     audio.volume = 0.3;
 
-    // Configurar audio bucle local
+    // Configurar audio bucle local - VOLUMEN A LA MITAD (0.5)
     audioBucleRef.current.loop = true;
+    audioBucleRef.current.volume = 0.5;
   }, []);
 
   // --- LÓGICA DE MÚSICA (PAUSA AUTOMÁTICA EN JUEGO) ---
@@ -125,16 +128,18 @@ function App() {
         audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
       }
       
-      // 2. Termina cuenta 2 -> Se abre video local
+      // 2. Termina cuenta 2 -> Se activa VIDEO DE FONDO
       if (dist2 <= 0 && checks.check1 && !checks.check2) {
         setChecks(prev => ({...prev, check2: true}));
-        audioBucleRef.current.pause(); // Para el audio anterior
-        window.open('/bucle_video.mp4', '_blank'); // Abre video local
+        audioBucleRef.current.pause(); 
+        setMostrarVideoFondo(true); // Activa el video de fondo
       }
       
       // 3. Termina cuenta 3 -> Se abre video final
       if (dist3 <= 0 && checks.check2 && !checks.check3) {
         setChecks(prev => ({...prev, check3: true}));
+        // Opcional: ocultar video de fondo para mostrar el enlace final
+        setMostrarVideoFondo(false);
         abrirVideoEnlace(); // Abre youtube
       }
 
@@ -151,7 +156,7 @@ function App() {
     return `${dias}d : ${horas}h : ${minutos}m : ${segundos}s`;
   }
 
-  // --- LÓGICA DEL CÓDIGO (PLAN B - CONTROLADOR DE FASES) ---
+  // --- LÓGICA DEL CÓDIGO (CONTROLADOR DE FASES) ---
   const comprobarCodigo = () => {
     
     // 1. REINICIAR: Vuelve a la fase inicial y limpia todo
@@ -159,13 +164,14 @@ function App() {
         setChecks({ check1: false, check2: false, check3: false });
         audioBucleRef.current.pause();
         audioBucleRef.current.currentTime = 0;
+        setMostrarVideoFondo(false);
         setCodigoCorrecto(false);
         setCodigoInput("");
         alert("Sistema reiniciado.");
         return;
     }
 
-    // 2. AVANZAR FASE: Activa la siguiente cuenta atrás
+    // 2. AVANZAR FASE
     if (codigoInput === "sombrasdeidentidad") {
       if (!checks.check1) {
           setChecks(prev => ({...prev, check1: true}));
@@ -174,10 +180,11 @@ function App() {
       } else if (checks.check1 && !checks.check2) {
           setChecks(prev => ({...prev, check2: true}));
           audioBucleRef.current.pause();
-          window.open('/bucle_video.mp4', '_blank');
+          setMostrarVideoFondo(true);
           alert("Fase 2 activada.");
       } else if (checks.check2 && !checks.check3) {
           setChecks(prev => ({...prev, check3: true}));
+          setMostrarVideoFondo(false);
           abrirVideoEnlace();
           alert("Fase 3 activada.");
       }
@@ -185,7 +192,7 @@ function App() {
       return;
     }
     
-    // 3. CÓDIGO PRODUCCIÓN: Funciona solo al final
+    // 3. CÓDIGO PRODUCCIÓN
     if (codigoInput === "91127") {
         if (checks.check3) {
             setCodigoCorrecto(true);
@@ -199,7 +206,7 @@ function App() {
   };
 
   const abrirVideoEnlace = () => {
-    window.open(urlVideo, "_blank"); // Abre en una pestaña nueva
+    window.open("https://www.youtube.com/watch?v=1goAp0XmhZQ", "_blank");
   };
   // ---------------------------------------------
 
@@ -238,7 +245,7 @@ function App() {
     setLoading(false);
   }
 
-  // --- LÓGICA DE JUEGO ---
+  // --- LÓGICA DE JUEGO (Igual) ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
@@ -383,6 +390,14 @@ function App() {
         </button>
       )}
 
+      {/* --- VIDEO DE FONDO --- */}
+      {mostrarVideoFondo && (
+          <video autoPlay loop muted className="video-fondo">
+              <source src="/bucle_video.mp4" type="video/mp4" />
+          </video>
+      )}
+      {/* ----------------------- */}
+
       {paginaActual === 'menu' && (
         <div className="app-container menu-fondo">
           <div className="menu-box">
@@ -413,36 +428,39 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (3 CUENTAS ATRÁS) --- */}
+      {/* --- VISTA SORPRESA ACTUALIZADA --- */}
       {paginaActual === 'sorpresa' && (
-        <div className="app-container menu-fondo">
-          <div className="contenedor-final">
+        <div className={`app-container ${mostrarVideoFondo ? 'sin-fondo' : 'menu-fondo'}`}>
+          <div className={`contenedor-final ${mostrarVideoFondo ? 'transparente' : ''}`}>
             <h2>Sorpresa</h2>
             
-            {/* Lógica de visibilidad secuencial */}
-            {!checks.check1 && (
-              <div className="bloque-cuenta">
-                <p>Para el 30 de Agosto de 2026:</p>
-                <div className="contador">{tiempos.ct1}</div>
-                <input type="checkbox" checked={checks.check1} disabled />
-              </div>
-            )}
+            {/* --- LISTA DE CUENTAS ATRÁS --- */}
+            <div className="lista-cuentas">
+                {/* Cuenta 1 */}
+                <div className="fila-cuenta">
+                    <span>30 Ago 2026: </span>
+                    {checks.check1 ? <strong>CUMPLIDO</strong> : 
+                     !checks.check1 && !checks.check2 && !checks.check3 ? <span>{tiempos.ct1}</span> : <span>*************</span>
+                    }
+                </div>
+                
+                {/* Cuenta 2 */}
+                <div className="fila-cuenta">
+                    <span>30 Ago 2027: </span>
+                    {checks.check2 ? <strong>CUMPLIDO</strong> :
+                     checks.check1 && !checks.check2 ? <span>{tiempos.ct2}</span> : <span>*************</span>
+                    }
+                </div>
 
-            {checks.check1 && !checks.check2 && (
-              <div className="bloque-cuenta">
-                <p>Para el 30 de Agosto de 2027:</p>
-                <div className="contador">{tiempos.ct2}</div>
-                <input type="checkbox" checked={checks.check2} disabled />
-              </div>
-            )}
-            
-            {checks.check2 && !checks.check3 && (
-              <div className="bloque-cuenta">
-                <p>Para el 11 de Septiembre de 2027:</p>
-                <div className="contador">{tiempos.ct3}</div>
-                <input type="checkbox" checked={checks.check3} disabled />
-              </div>
-            )}
+                {/* Cuenta 3 */}
+                <div className="fila-cuenta">
+                    <span>11 Sep 2027: </span>
+                    {checks.check3 ? <strong>CUMPLIDO</strong> :
+                     checks.check2 && !checks.check3 ? <span>{tiempos.ct3}</span> : <span>*************</span>
+                    }
+                </div>
+            </div>
+            {/* ------------------------------- */}
 
             {/* Código de activación final tras las 3 cuentas */}
             {checks.check3 && (
@@ -466,7 +484,7 @@ function App() {
                 )
             )}
             
-            {/* CAMPO PARA CÓDIGOS DE ADMINISTRACIÓN DE FASES */}
+            {/* CAMPO PARA CÓDIGOS DE ADMINISTRACIÓN */}
             {!(checks.check3 && codigoCorrecto) && (
                 <div style={{marginTop: '20px'}}>
                     <input 
@@ -493,8 +511,8 @@ function App() {
       )}
       {/* ------------------------------ */}
 
-      {/* ... [Resto de vistas igual: modo, modo-tipo, temas, juego, administrar] ... */}
-      {paginaActual === 'modo' && (
+      {/* ... [Resto de vistas igual: modo, temas, juego, administrar] ... */}
+       {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">
                   <h2>Selecciona el Modo</h2>
@@ -514,7 +532,7 @@ function App() {
                   <div className="menu-botones">
                       <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
-                      <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
+                      <button onClick={() => setPaginaStart('modo')} className="boton-volver">Volver</button>
                   </div>
               </div>
           </div>
