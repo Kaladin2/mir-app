@@ -35,12 +35,27 @@ function App() {
   const audioRef = useRef(new Audio('/musica.mp3')); 
   const audioEspecialRef = useRef(new Audio('/redstag.wav'));
   const temporizadorRef = useRef(null);
-  const [tiempoRestante, setTiempoRestante] = useState(""); 
   
+  // --- NUEVO: ESTADOS DE LAS CUENTAS ATRÁS Y ARCHIVOS ---
+  const [tiempos, setTiempos] = useState({
+    ct1: "",
+    ct2: "",
+    ct3: ""
+  });
+  const [checks, setChecks] = useState({
+    check1: false,
+    check2: false,
+    check3: false
+  });
+  
+  // Referencias a archivos en /public
+  const audioBucleRef = useRef(new Audio('/bucle_audio.mp3'));
+  // --------------------------------------------------------
+
   // --- ESTADO PARA EL CÓDIGO (PLAN B) ---
   const [codigoInput, setCodigoInput] = useState("");
   const [codigoCorrecto, setCodigoCorrecto] = useState(false);
-  // --- DEFINE AQUÍ LA URL DE TU VIDEO ---
+  // --- DEFINE AQUÍ LA URL DE TU VIDEO FINAL ---
   const urlVideo = "https://www.youtube.com/watch?v=1goAp0XmhZQ"; 
 
   const listaTemas = [
@@ -58,7 +73,10 @@ function App() {
     
     const audio = audioRef.current;
     audio.loop = true;
-    audio.volume = 0.3; 
+    audio.volume = 0.3;
+
+    // Configurar audio bucle local
+    audioBucleRef.current.loop = true;
   }, []);
 
   // --- LÓGICA DE MÚSICA (PAUSA AUTOMÁTICA EN JUEGO) ---
@@ -76,52 +94,108 @@ function App() {
     return () => audio.pause();
   }, [paginaActual]);
 
-  // --- LÓGICA DE LA CUENTA ATRÁS ---
+  // --- LÓGICA DE LAS 3 CUENTAS ATRÁS SECUENCIALES ---
   useEffect(() => {
     if (paginaActual !== 'sorpresa') return; 
 
-    // --- FECHA OBJETIVO ---
-    const fechaObjetivo = new Date("September 11, 2027 00:00:00").getTime();
+    // --- FECHAS OBJETIVO ---
+    const f1 = new Date("August 30, 2026 00:00:00").getTime();
+    const f2 = new Date("August 30, 2027 00:00:00").getTime();
+    const f3 = new Date("September 11, 2027 00:00:00").getTime();
 
     const intervalo = setInterval(() => {
       const ahora = new Date().getTime();
-      const distancia = fechaObjetivo - ahora;
+      
+      const dist1 = f1 - ahora;
+      const dist2 = f2 - ahora;
+      const dist3 = f3 - ahora;
 
-      const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
-      const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
-      const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+      // Actualizar tiempos en pantalla
+      setTiempos({
+        ct1: dist1 > 0 ? formatearDistancia(dist1) : "¡LLEGÓ EL DÍA!",
+        ct2: dist2 > 0 ? formatearDistancia(dist2) : "¡LLEGÓ EL DÍA!",
+        ct3: dist3 > 0 ? formatearDistancia(dist3) : "¡LLEGÓ EL DÍA!"
+      });
 
-      setTiempoRestante(`${dias}d : ${horas}h : ${minutos}m : ${segundos}s`);
+      // --- ACCIONES SECUENCIALES AUTOMÁTICAS ---
 
-      if (distancia < 0) {
-        clearInterval(intervalo);
-        setTiempoRestante("0");
+      // 1. Termina cuenta 1 -> Suena audio bucle
+      if (dist1 <= 0 && !checks.check1) {
+        setChecks(prev => ({...prev, check1: true}));
+        audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
       }
+      
+      // 2. Termina cuenta 2 -> Se abre video local
+      if (dist2 <= 0 && checks.check1 && !checks.check2) {
+        setChecks(prev => ({...prev, check2: true}));
+        audioBucleRef.current.pause(); // Para el audio anterior
+        window.open('/bucle_video.mp4', '_blank'); // Abre video local
+      }
+      
+      // 3. Termina cuenta 3 -> Se abre video final
+      if (dist3 <= 0 && checks.check2 && !checks.check3) {
+        setChecks(prev => ({...prev, check3: true}));
+        abrirVideoEnlace(); // Abre youtube
+      }
+
     }, 1000);
 
     return () => clearInterval(intervalo); 
-  }, [paginaActual]);
+  }, [paginaActual, checks]);
 
-  // --- LÓGICA DEL CÓDIGO (PLAN B - CORREGIDO PARA PRUEBAS) ---
+  const formatearDistancia = (distancia) => {
+    const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
+    const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+    return `${dias}d : ${horas}h : ${minutos}m : ${segundos}s`;
+  }
+
+  // --- LÓGICA DEL CÓDIGO (PLAN B - CONTROLADOR DE FASES) ---
   const comprobarCodigo = () => {
-    // --- CONTRASEÑA MAESTRA DE PRUEBAS ---
+    
+    // 1. REINICIAR: Vuelve a la fase inicial y limpia todo
+    if (codigoInput === "reiniciar") {
+        setChecks({ check1: false, check2: false, check3: false });
+        audioBucleRef.current.pause();
+        audioBucleRef.current.currentTime = 0;
+        setCodigoCorrecto(false);
+        setCodigoInput("");
+        alert("Sistema reiniciado.");
+        return;
+    }
+
+    // 2. AVANZAR FASE: Activa la siguiente cuenta atrás
     if (codigoInput === "sombrasdeidentidad") {
-      setCodigoCorrecto(true);
+      if (!checks.check1) {
+          setChecks(prev => ({...prev, check1: true}));
+          audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
+          alert("Fase 1 activada.");
+      } else if (checks.check1 && !checks.check2) {
+          setChecks(prev => ({...prev, check2: true}));
+          audioBucleRef.current.pause();
+          window.open('/bucle_video.mp4', '_blank');
+          alert("Fase 2 activada.");
+      } else if (checks.check2 && !checks.check3) {
+          setChecks(prev => ({...prev, check3: true}));
+          abrirVideoEnlace();
+          alert("Fase 3 activada.");
+      }
+      setCodigoInput("");
       return;
     }
-
-    // --- VERIFICAR SI YA LLEGÓ LA FECHA ---
-    if (tiempoRestante !== "0!") {
-      alert("Aún no es el momento.");
-      return;
-    }
-
-    if (codigoInput === "maridoymujer") { // CÓDIGO DE PRODUCCIÓN
-      setCodigoCorrecto(true);
+    
+    // 3. CÓDIGO PRODUCCIÓN: Funciona solo al final
+    if (codigoInput === "91127") {
+        if (checks.check3) {
+            setCodigoCorrecto(true);
+        } else {
+            alert("Aún no es el momento.");
+        }
     } else {
       alert("Código incorrecto");
     }
+    setCodigoInput("");
   };
 
   const abrirVideoEnlace = () => {
@@ -339,34 +413,75 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA (PLAN B: CORREGIDO PARA PRUEBAS) --- */}
+      {/* --- VISTA SORPRESA (3 CUENTAS ATRÁS) --- */}
       {paginaActual === 'sorpresa' && (
         <div className="app-container menu-fondo">
           <div className="contenedor-final">
             <h2>Sorpresa</h2>
-            <p>Falta:</p>
-            <div className="contador">{tiempoRestante}</div>
-            <p>para tu sorpresa.</p>
             
-            {!codigoCorrecto ? (
-              <>
-                <input 
-                  type="password" 
-                  placeholder="Código" 
-                  className="input-codigo"
-                  value={codigoInput}
-                  onChange={e => setCodigoInput(e.target.value)}
-                />
-                <button onClick={comprobarCodigo} className="boton-enviar">
-                  Activar
-                </button>
-              </>
-            ) : (
-              <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
-                Pulsa aqui
-              </button>
+            {/* Lógica de visibilidad secuencial */}
+            {!checks.check1 && (
+              <div className="bloque-cuenta">
+                <p>Para el 30 de Agosto de 2026:</p>
+                <div className="contador">{tiempos.ct1}</div>
+                <input type="checkbox" checked={checks.check1} disabled />
+              </div>
+            )}
+
+            {checks.check1 && !checks.check2 && (
+              <div className="bloque-cuenta">
+                <p>Para el 30 de Agosto de 2027:</p>
+                <div className="contador">{tiempos.ct2}</div>
+                <input type="checkbox" checked={checks.check2} disabled />
+              </div>
             )}
             
+            {checks.check2 && !checks.check3 && (
+              <div className="bloque-cuenta">
+                <p>Para el 11 de Septiembre de 2027:</p>
+                <div className="contador">{tiempos.ct3}</div>
+                <input type="checkbox" checked={checks.check3} disabled />
+              </div>
+            )}
+
+            {/* Código de activación final tras las 3 cuentas */}
+            {checks.check3 && (
+                !codigoCorrecto ? (
+                <>
+                    <input 
+                    type="password" 
+                    placeholder="Código final" 
+                    className="input-codigo"
+                    value={codigoInput}
+                    onChange={e => setCodigoInput(e.target.value)}
+                    />
+                    <button onClick={comprobarCodigo} className="boton-enviar">
+                    Activar
+                    </button>
+                </>
+                ) : (
+                <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
+                    Ver Video Final
+                </button>
+                )
+            )}
+            
+            {/* CAMPO PARA CÓDIGOS DE ADMINISTRACIÓN DE FASES */}
+            {!(checks.check3 && codigoCorrecto) && (
+                <div style={{marginTop: '20px'}}>
+                    <input 
+                    type="text" 
+                    placeholder="Código de administración" 
+                    className="input-codigo"
+                    value={codigoInput}
+                    onChange={e => setCodigoInput(e.target.value)}
+                    />
+                    <button onClick={comprobarCodigo} className="boton-enviar" style={{backgroundColor: '#666'}}>
+                    Enviar
+                    </button>
+                </div>
+            )}
+
             <button onClick={() => {
               setCodigoCorrecto(false);
               setPaginaActual('menu');
@@ -397,7 +512,7 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
