@@ -293,7 +293,7 @@ body {
   transform: scale(0.95);
 }
 
-/* --- ESTILOS PARA LA CUENTA ATRÁS (ACTUALIZADO) --- */
+/* --- ESTILOS PARA LA CUENTA ATRÁS --- */
 .cuenta-atras-box {
   background: rgba(0, 0, 0, 0.85);
   padding: 50px;
@@ -304,24 +304,24 @@ body {
   box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-/* Título de la vista */
 .cuenta-atras-box h2 {
   font-size: 2rem;
   margin-bottom: 30px;
   color: #ddd;
 }
 
-/* Estilo para el texto "Falta:" y "para tu sorpresa" */
 .cuenta-atras-box p {
-  font-size: 1.5rem; /* Tamaño de letra uniforme */
+  font-size: 1.5rem;
   margin: 10px 0;
 }
 
+/* --- NUEVO ESTILO MEJORADO PARA EL CONTADOR --- */
 .contador {
-  font-size: 2.5rem; /* Tamaño uniforme con el texto */
-  font-family: monospace;
+  font-size: 3.5rem; /* MÁS GRANDE */
+  font-family: 'Courier New', Courier, monospace; /* TIPO DIGITAL */
   font-weight: bold;
-  color: #4CAF50;
+  color: #00ff00; /* COLOR VERDE */
+  text-shadow: 0 0 15px #00ff00; /* EFECTO BRILLO */
   margin: 20px 0;
   display: block;
 }
@@ -350,8 +350,6 @@ body {
 
 /* --- ESTILOS DE VIDEO MEJORADOS --- */
 
-/* --- CSS DE VIDEO RADICAL --- */
-
 .reproductor-youtube-wrapper {
   position: fixed;
   top: 0;
@@ -378,8 +376,11 @@ body {
   z-index: 100; /* SUPERIOR al video */
   width: 80%;
   max-width: 500px;
-  background: rgba(0, 0, 0, 0.9);
-  padding: 30px;
+  /* FONDO MEJORADO */
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 40px;
   border-radius: 15px;
   text-align: center;
   color: white;
@@ -404,4 +405,35 @@ body {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+/* --- NUEVOS ESTILOS PARA LA LISTA DE CUENTAS (EN SORPRESA) --- */
+.lista-cuentas {
+  margin: 30px 0;
+  text-align: center;
+}
+
+.fila-cuenta {
+  margin-bottom: 25px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 3.5rem; /* MÁS GRANDE */
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #00ff00; /* COLOR VERDE */
+  text-shadow: 0 0 15px #00ff00; /* EFECTO BRILLO */
+}
+
+/* --- FONDO DE VIDEO (SI SE USA) --- */
+.video-fondo {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+  z-index: -1;
+  object-fit: cover;
+}
+
+.app-container.sin-fondo {
+  background-color: transparent;
 }
