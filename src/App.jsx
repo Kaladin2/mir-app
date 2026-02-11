@@ -101,7 +101,7 @@ function App() {
   useEffect(() => {
     if (paginaActual !== 'sorpresa') return; 
 
-    // --- FECHAS OBJETIVO ---
+    // --- FECHAS OBJETIVO (Ajusta estas fechas) ---
     const f1 = new Date("August 30, 2026 00:00:00").getTime();
     const f2 = new Date("August 30, 2027 00:00:00").getTime();
     const f3 = new Date("September 11, 2027 00:00:00").getTime();
@@ -150,7 +150,7 @@ function App() {
     setFases(prev => ({...prev, fase2: true}));
     setTiempos(prev => ({...prev, ct2: "CUMPLIDO"}));
     audioBucleRef.current.pause(); 
-    setMostrarVideoFondo(true);
+    setMostrarVideoFondo(true); // Activa el video de fondo
   };
 
   const activarFase3 = () => {
@@ -170,7 +170,7 @@ function App() {
   // --- LÓGICA DEL CÓDIGO (CONTROLADOR DE FASES) ---
   const comprobarCodigo = () => {
     
-    // 1. REINICIAR: Vuelve a la fase inicial
+    // 1. REINICIAR: Vuelve a la fase inicial y limpia todo
     if (codigoInput === "reiniciar") {
         setFases({ fase1: false, fase2: false, fase3: false });
         audioBucleRef.current.pause();
@@ -211,7 +211,7 @@ function App() {
         return;
     }
     
-    // 4. CÓDIGO ADM (Opcional)
+    // 4. CÓDIGO ADM (Opcional si necesitas otro)
     if (codigoInput === "91127") {
         alert("Modo Admin activado (simulado)");
     } else {
@@ -449,16 +449,20 @@ function App() {
           <div className={`contenedor-final ${mostrarVideoFondo ? 'transparente' : ''}`}>
             <h2>Sorpresa</h2>
             
-            {/* --- LISTA DE CUENTAS ATRÁS (Solo números) --- */}
+            {/* --- LISTA DE CUENTAS ATRÁS (Solo una visible, resto asteriscos) --- */}
             <div className="lista-cuentas">
                 <div className="fila-cuenta">
                     {fases.fase1 ? <strong>CUMPLIDO</strong> : <span>{tiempos.ct1}</span>}
                 </div>
                 <div className="fila-cuenta">
-                    {fases.fase2 ? <strong>CUMPLIDO</strong> : <span>{tiempos.ct2}</span>}
+                    {fases.fase2 ? <strong>CUMPLIDO</strong> : 
+                     fases.fase1 ? <span>{tiempos.ct2}</span> : <span>*************</span>
+                    }
                 </div>
                 <div className="fila-cuenta">
-                    {fases.fase3 ? <strong>CUMPLIDO</strong> : <span>{tiempos.ct3}</span>}
+                    {fases.fase3 ? <strong>CUMPLIDO</strong> : 
+                     fases.fase2 ? <span>{tiempos.ct3}</span> : <span>*************</span>
+                    }
                 </div>
             </div>
             {/* ------------------------------- */}
