@@ -423,7 +423,7 @@ body {
   text-shadow: 0 0 11px #37cee2; /* EFECTO BRILLO */
 }
 
-/* --- FONDO DE VIDEO (SI SE USA) --- */
+/* Añade esto a tu App.css */
 .video-fondo {
   position: fixed;
   right: 0;
@@ -436,4 +436,21 @@ body {
 
 .app-container.sin-fondo {
   background-color: transparent;
+}
+
+.contenedor-final.transparente {
+  background-color: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente para leer el texto */
+  color: white;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.lista-cuentas {
+  margin: 20px 0;
+  font-size: 1.2rem;
+  text-align: left;
+}
+
+.fila-cuenta {
+  margin-bottom: 10px;
 }
