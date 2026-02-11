@@ -135,12 +135,10 @@ function App() {
         setMostrarVideoFondo(true); // Activa el video de fondo
       }
       
-      // 3. Termina cuenta 3 -> Se abre video final
+      // 3. Termina cuenta 3 -> Habilitar botón sorpresa final
       if (dist3 <= 0 && checks.check2 && !checks.check3) {
         setChecks(prev => ({...prev, check3: true}));
-        // Opcional: ocultar video de fondo para mostrar el enlace final
-        setMostrarVideoFondo(false);
-        abrirVideoEnlace(); // Abre youtube
+        // Ya no abrimos automáticamente ni usamos código aquí
       }
 
     }, 1000);
@@ -160,7 +158,7 @@ function App() {
   const comprobarCodigo = () => {
     
     // 1. REINICIAR: Vuelve a la fase inicial y limpia todo
-    if (codigoInput === "reiniciar") {
+    if (codigoInput.toLowerCase() === "reiniciar") {
         setChecks({ check1: false, check2: false, check3: false });
         audioBucleRef.current.pause();
         audioBucleRef.current.currentTime = 0;
@@ -171,8 +169,8 @@ function App() {
         return;
     }
 
-    // 2. AVANZAR FASE
-    if (codigoInput === "sombrasdeidentidad") {
+    // 2. AVANZAR FASE (ADMIN)
+    if (codigoInput.toLowerCase() === "sombrasdeidentidad") {
       if (!checks.check1) {
           setChecks(prev => ({...prev, check1: true}));
           audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
@@ -185,14 +183,13 @@ function App() {
       } else if (checks.check2 && !checks.check3) {
           setChecks(prev => ({...prev, check3: true}));
           setMostrarVideoFondo(false);
-          abrirVideoEnlace();
           alert("Fase 3 activada.");
       }
       setCodigoInput("");
       return;
     }
     
-    // 3. CÓDIGO PRODUCCIÓN
+    // 3. CÓDIGO PRODUCCIÓN (Plan B)
     if (codigoInput === "91127") {
         if (checks.check3) {
             setCodigoCorrecto(true);
@@ -428,7 +425,7 @@ function App() {
         </div>
       )}
       
-      {/* --- VISTA SORPRESA ACTUALIZADA (Sin fechas) --- */}
+      {/* --- VISTA SORPRESA ACTUALIZADA --- */}
       {paginaActual === 'sorpresa' && (
         <div className={`app-container ${mostrarVideoFondo ? 'sin-fondo' : 'menu-fondo'}`}>
           <div className={`contenedor-final ${mostrarVideoFondo ? 'transparente' : ''}`}>
@@ -459,43 +456,38 @@ function App() {
             </div>
             {/* ------------------------------- */}
 
-            {/* Código de activación final tras las 3 cuentas */}
+            {/* --- NUEVO: BOTONES DE SORPRESA FINAL --- */}
             {checks.check3 && (
-                !codigoCorrecto ? (
-                <>
-                    <input 
-                    type="password" 
-                    placeholder="Código final" 
-                    className="input-codigo"
-                    value={codigoInput}
-                    onChange={e => setCodigoInput(e.target.value)}
-                    />
-                    <button onClick={comprobarCodigo} className="boton-enviar">
-                    Activar
+                <div style={{marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center', alignItems: 'center'}}>
+                    <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
+                        Ir a la sorpresa
                     </button>
-                </>
-                ) : (
-                <button onClick={abrirVideoEnlace} className="menu-btn primary" style={{fontSize: '1.2rem', padding: '15px 30px'}}>
-                    Ver Video Final
-                </button>
-                )
-            )}
-            
-            {/* CAMPO PARA CÓDIGOS DE ADMINISTRACIÓN */}
-            {!(checks.check3 && codigoCorrecto) && (
-                <div style={{marginTop: '20px'}}>
-                    <input 
-                    type="text" 
-                    placeholder="Código de administración" 
-                    className="input-codigo"
-                    value={codigoInput}
-                    onChange={e => setCodigoInput(e.target.value)}
-                    />
-                    <button onClick={comprobarCodigo} className="boton-enviar" style={{backgroundColor: '#666'}}>
-                    Enviar
+                    <button onClick={() => {
+                        // Acción para reiniciar el contador manualmente
+                        setChecks({ check1: false, check2: false, check3: false });
+                        audioBucleRef.current.pause();
+                        audioBucleRef.current.currentTime = 0;
+                        setMostrarVideoFondo(false);
+                    }} className="menu-btn tertiary" style={{padding: '10px'}}>
+                        🔄
                     </button>
                 </div>
             )}
+            
+            {/* CAMPO PARA CÓDIGOS DE ADMINISTRACIÓN (Sombras/Reiniciar) */}
+            <div style={{marginTop: '40px', borderTop: '1px solid #444', paddingTop: '10px'}}>
+                <input 
+                type="text" 
+                placeholder="Código de administración" 
+                className="input-codigo"
+                style={{backgroundColor: '#222', color: '#fff'}}
+                value={codigoInput}
+                onChange={e => setCodigoInput(e.target.value)}
+                />
+                <button onClick={comprobarCodigo} className="boton-enviar" style={{backgroundColor: '#666'}}>
+                Enviar
+                </button>
+            </div>
 
             <button onClick={() => {
               setCodigoCorrecto(false);
@@ -611,7 +603,7 @@ function App() {
               {(comprobado || examenFinalizado) && preguntasJuego[preguntaActualIndex]?.explicacion && (
                   <div className="area-explicacion">
                       <h4>Explicación:</h4>
-                      <p>{preguntasJuego[preccionActualIndex]?.explicacion}</p>
+                      <p>{preguntasJuego[preguntaActualIndex]?.explicacion}</p>
                   </div>
               )}
               <div className="footer-pregunta">
