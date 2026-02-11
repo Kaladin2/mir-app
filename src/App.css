@@ -414,9 +414,9 @@ body {
 }
 
 .fila-cuenta {
-  margin-bottom: 20px;
+  margin-bottom: 17px;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 3rem; /* MÁS GRANDE */
+  font-size: 2.5rem; /* MÁS GRANDE */
   font-weight: bold;
   letter-spacing: 2px;
   color: #37cee2; /* COLOR VERDE */
