@@ -414,13 +414,13 @@ body {
 }
 
 .fila-cuenta {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 3.5rem; /* MÁS GRANDE */
+  font-size: 3rem; /* MÁS GRANDE */
   font-weight: bold;
   letter-spacing: 2px;
-  color: #00ff00; /* COLOR VERDE */
-  text-shadow: 0 0 15px #00ff00; /* EFECTO BRILLO */
+  color: #37cee2; /* COLOR VERDE */
+  text-shadow: 0 0 11px #37cee2; /* EFECTO BRILLO */
 }
 
 /* --- FONDO DE VIDEO (SI SE USA) --- */
