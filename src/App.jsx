@@ -61,10 +61,9 @@ function App() {
   // ---------------------------------------------
 
   const listaTemas = [
-    "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
-    "Farmacologia", "Ginecologia", "Digestivo", "Respiratorio", 
-    "Oncologia", "Geriatria", "Urgencias y Emergencias", "Psiquiatria", 
-    "Investigacion", "UCI", "Endocrinologia", "Familia"
+    "Cardiologia", "Salud publica", "Dermatologia", "1 Pediatria", 
+    "2 Pediatria", "Obstetricia", "Otorrino","Talleres", 
+    "Urgencias y Emergencias", "Familia"
   ];
   const listaAños = ["2021", "2022", "2023", "2024", "2025", "2026"];
 
@@ -170,7 +169,7 @@ function App() {
     }
 
     // 2. AVANZAR FASE (ADMIN)
-    if (codigoInput.toLowerCase() === "sombrasdeidentidad") {
+    if (codigoInput.toLowerCase() === "espinanegra") {
       if (!checks.check1) {
           setChecks(prev => ({...prev, check1: true}));
           audioBucleRef.current.play().catch(e => console.log("Audio bucle bloqueado"));
@@ -190,7 +189,7 @@ function App() {
     }
     
     // 3. CÓDIGO PRODUCCIÓN (Plan B)
-    if (codigoInput === "91127") {
+    if (codigoInput === "maridoymujer") {
         if (checks.check3) {
             setCodigoCorrecto(true);
         } else {
