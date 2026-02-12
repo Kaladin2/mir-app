@@ -64,7 +64,7 @@ function App() {
     "Cardiologia", "Traumatologia", "Nefrologia/Urologia", "Pediatria", 
     "Farmacologia", "Ginecologia", "Digestivo", "Respiratorio", 
     "Oncologia", "Geriatria", "Urgencias y Emergencias", "Psiquiatria", 
-    "Investigacion", "UCI", "Endocrinologia"
+    "Investigacion", "UCI", "Endocrinologia", "Familia"
   ];
   const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025"];
 
@@ -478,7 +478,7 @@ function App() {
             <div style={{marginTop: '40px', borderTop: '1px solid #444', paddingTop: '10px'}}>
                 <input 
                 type="text" 
-                placeholder="Código de administración" 
+                placeholder="Código" 
                 className="input-codigo"
                 style={{backgroundColor: '#222', color: '#fff'}}
                 value={codigoInput}
@@ -519,7 +519,7 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
+                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
