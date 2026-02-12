@@ -242,7 +242,7 @@ function App() {
     setLoading(false);
   }
 
-  // --- LÓGICA DE JUEGO (Igual) ---
+  // --- LÓGICA DE JUEGO (Modificada para cargar todas las preguntas) ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
@@ -261,8 +261,13 @@ function App() {
       alert("No hay preguntas disponibles");
       return;
     }
+    
+    // Mezclamos las preguntas
     const mezcladas = [...preguntasSeleccionadas].sort(() => 0.5 - Math.random());
-    const seleccionadas = mezcladas.slice(0, 50);
+    
+    // CAMBIO: Eliminado .slice(0, 50) para cargar todas
+    const seleccionadas = mezcladas; 
+
     const preguntasConOpcionesMezcladas = seleccionadas.map(pregunta => {
         const opcionesOriginales = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
         const textoCorrectoOriginal = opcionesOriginales[pregunta.correcta - 1];
@@ -500,8 +505,7 @@ function App() {
       )}
       {/* ------------------------------ */}
 
-      {/* ... [Resto de vistas igual] ... */}
-       {paginaActual === 'modo' && (
+      {paginaActual === 'modo' && (
           <div className="app-container">
               <div className="menu-box">
                   <h2>Selecciona el Modo</h2>
