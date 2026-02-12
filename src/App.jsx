@@ -231,10 +231,8 @@ function App() {
     clearTimeout(temporizadorRef.current);
   };
 
-  // --- FUNCIÓN ACTUALIZADA PARA CARGAR TODO ---
   async function fetchPreguntas() {
     setLoading(true);
-    // .select('*') sin filtros de rango trae todas las filas
     const { data, error } = await supabase
       .from('preguntas')
       .select('*'); 
@@ -243,9 +241,8 @@ function App() {
     else setTodasLasPreguntas(data || []);
     setLoading(false);
   }
-  // ---------------------------------------------
 
-  // --- LÓGICA DE JUEGO (Modificada para cargar todas las preguntas) ---
+  // --- LÓGICA DE JUEGO (Modificada para limitar a 50 en aleatorio) ---
   const prepararPregunta = (index) => {
     const pregunta = preguntasJuego[index];
     if (!pregunta) return;
@@ -259,7 +256,7 @@ function App() {
     setPreguntaActualIndex(index);
   };
 
-  const iniciarJuego = (preguntasSeleccionadas) => {
+  const iniciarJuego = (preguntasSeleccionadas, esAleatorio = false) => {
     if (preguntasSeleccionadas.length === 0) {
       alert("No hay preguntas disponibles");
       return;
@@ -268,8 +265,8 @@ function App() {
     // Mezclamos las preguntas
     const mezcladas = [...preguntasSeleccionadas].sort(() => 0.5 - Math.random());
     
-    // CAMBIO: Eliminado .slice(0, 50) para cargar todas
-    const seleccionadas = mezcladas; 
+    // CAMBIO: Si es aleatorio, limitamos a 50, si es por tema, usamos todas
+    const seleccionadas = esAleatorio ? mezcladas.slice(0, 50) : mezcladas; 
 
     const preguntasConOpcionesMezcladas = seleccionadas.map(pregunta => {
         const opcionesOriginales = [pregunta.opcionA, pregunta.opcionB, pregunta.opcionC, pregunta.opcionD];
@@ -526,7 +523,8 @@ function App() {
               <div className="menu-box">
                   <h2>¿Qué quieres estudiar?</h2>
                   <div className="menu-botones">
-                      <button onClick={() => iniciarJuego(todasLasPreguntas)} className="menu-btn primary">Preguntas Aleatorias </button>
+                      {/* CAMBIO: Pasamos true para indicar que es aleatorio */}
+                      <button onClick={() => iniciarJuego(todasLasPreguntas, true)} className="menu-btn primary">Preguntas Aleatorias (50)</button>
                       <button onClick={() => setPaginaActual('temas')} className="menu-btn secondary">Elegir Tema</button>
                       <button onClick={() => setPaginaActual('modo')} className="boton-volver">Volver</button>
                   </div>
@@ -542,7 +540,8 @@ function App() {
             {listaTemas.map(tema => (
               <button key={tema} className="tema-button" onClick={() => {
                 const preguntasTema = todasLasPreguntas.filter(p => p.tema === tema);
-                iniciarJuego(preguntasTema);
+                // CAMBIO: Pasamos false para indicar que es por tema
+                iniciarJuego(preguntasTema, false);
               }}>{tema}</button>
             ))}
           </div>
