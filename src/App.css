@@ -87,7 +87,7 @@ body {
   border-color: var(--primary);
 }
 
-/* Panel Lateral */
+/* --- CAMBIO: Panel Lateral modificado para scroll --- */
 .panel-lateral {
   width: 280px;
   background: var(--surface);
@@ -98,14 +98,20 @@ body {
   flex-direction: column;
   position: sticky;
   top: 0;
+  overflow: hidden; /* Evita doble scroll */
 }
 
+/* --- CAMBIO: Mapa modificado para scroll --- */
 .mapa-preguntas {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 8px;
   margin-top: 20px;
+  overflow-y: auto; /* Habilita el scroll vertical */
+  padding-right: 5px; /* Espacio para la barra de scroll */
+  flex-grow: 1; /* Ocupa el espacio disponible */
 }
+/* ------------------------------------------- */
 
 .boton-mapa {
   padding: 10px;
@@ -126,7 +132,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: auto;
+  margin-top: 20px; /* Separar del mapa con scroll */
   margin-bottom: 20px;
 }
 
@@ -422,4 +428,3 @@ body {
   color: #37cee2; /* COLOR VERDE */
   text-shadow: 0 0 11px #37cee2; /* EFECTO BRILLO */
 }
-
