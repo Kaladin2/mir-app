@@ -231,16 +231,19 @@ function App() {
     clearTimeout(temporizadorRef.current);
   };
 
+  // --- FUNCIÓN ACTUALIZADA PARA CARGAR TODO ---
   async function fetchPreguntas() {
     setLoading(true);
+    // .select('*') sin filtros de rango trae todas las filas
     const { data, error } = await supabase
       .from('preguntas')
-      .select('*');
+      .select('*'); 
     
     if (error) console.log('Error cargando:', error);
     else setTodasLasPreguntas(data || []);
     setLoading(false);
   }
+  // ---------------------------------------------
 
   // --- LÓGICA DE JUEGO (Modificada para cargar todas las preguntas) ---
   const prepararPregunta = (index) => {
