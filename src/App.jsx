@@ -66,7 +66,7 @@ function App() {
     "Oncologia", "Geriatria", "Urgencias y Emergencias", "Psiquiatria", 
     "Investigacion", "UCI", "Endocrinologia", "Familia"
   ];
-  const listaAños = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"];
+  const listaAños = ["2021", "2022", "2023", "2024", "2025", "2026"];
 
   useEffect(() => {
     fetchPreguntas();
